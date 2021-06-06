@@ -28,21 +28,24 @@ const getIdsFromPage = async (page) => {
   });
 };
 
-const getPasteFromId = async (id) => {
+const getPasteFromId = async (pasteId) => {
   return await new Promise((resolve, reject) => {
     tr.request(
-      `http://nzxj65x32vh2fkhk.onion/${id}`,
+      `http://nzxj65x32vh2fkhk.onion/${pasteId}`,
       function (err, response, html) {
         if (err || response.statusCode !== 200) reject(err);
 
         const $ = cheerio.load(html);
 
         const row = $(".row");
-        const title = row.find("h4").text();
-        const content = row.find(".well.well-sm.well-white.pre").text();
-        const info = row.find(".col-sm-6").text();
+        const title = row.find("h4").text().trim();
+        const content = row.find(".well.well-sm.well-white.pre").text().trim();
+        const info = row.find(".col-sm-6").text().trim().split(" ");
+        const author = info[2];
+        info[8] = info[8].slice(0, 3);
+        const date = new Date(info.slice(4, 9).join(" "));
 
-        const paste = { title, content, info };
+        const paste = { pasteId, title, content, author, date };
 
         resolve(paste);
       }
