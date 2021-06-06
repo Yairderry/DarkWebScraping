@@ -28,6 +28,28 @@ const getIdsFromPage = async (page) => {
   });
 };
 
+const getPasteFromId = async (id) => {
+  return await new Promise((resolve, reject) => {
+    tr.request(
+      `http://nzxj65x32vh2fkhk.onion/${id}`,
+      function (err, response, html) {
+        if (err || response.statusCode !== 200) reject(err);
+
+        const $ = cheerio.load(html);
+
+        const row = $(".row");
+        const title = row.find("h4").text();
+        const content = row.find(".well.well-sm.well-white.pre").text();
+        const info = row.find(".col-sm-6").text();
+
+        const paste = { title, content, info };
+
+        resolve(paste);
+      }
+    );
+  });
+};
+
 const getAllIds = async (page, pagePasteIds = []) => {
   try {
     const pasteIds = await getIdsFromPage(page);
@@ -38,6 +60,13 @@ const getAllIds = async (page, pagePasteIds = []) => {
   }
 };
 
+const getPaste = async (id) => {
+  try {
+  } catch (error) {}
+};
+
 module.exports = {
   getAllIds,
+  getPaste,
+  getPasteFromId,
 };
