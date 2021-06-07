@@ -1,6 +1,20 @@
-require("dotenv").config();
-const app = require("./app");
+"use strict";
 
-const PORT = process.env.PORT || 80;
+const { findNewPastes } = require("./scrape");
+const { addPastes } = require("./queries");
 
-app.listen(PORT, () => console.log(`app listening on port: ${PORT}`));
+const app = async () => {
+  try {
+    const pastes = await findNewPastes();
+    console.log("pastes", pastes);
+    const response = await addPastes(pastes);
+    console.log("response", response);
+    return response;
+  } catch (error) {
+    return error;
+  }
+};
+
+setInterval(() => {
+  app();
+}, 120000);

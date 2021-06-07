@@ -71,7 +71,7 @@ const findNewPastes = async () => {
     (pasteId) => !currentPasteIds.includes(pasteId)
   );
 
-  if (newPasteIds.length <= 0) return;
+  if (newPasteIds.length <= 0) return [];
 
   const pastes = await Promise.all(
     newPasteIds.map(async (id) => await getPasteFromId(id))

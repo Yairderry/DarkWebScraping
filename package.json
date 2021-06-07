@@ -6,21 +6,17 @@
   "dependencies": {
     "axios": "^0.21.1",
     "cheerio": "^1.0.0-rc.9",
-    "cors": "^2.8.5",
     "dotenv": "^10.0.0",
-    "express": "^4.17.1",
     "mysql2": "^2.2.5",
     "sequelize": "^6.6.2",
     "tor-request": "^3.1.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.7",
     "sequelize-cli": "^6.2.0"
   },
   "scripts": {
     "start": "node index.js",
-    "setup": "npx sequelize db:migrate && npx sequelize db:seed:all",
-    "dev": "nodemon index.js"
+    "setup": "npx sequelize db:migrate && npx sequelize db:seed:all"
   },
   "author": "",
   "license": "ISC"
