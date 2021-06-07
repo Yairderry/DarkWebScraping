@@ -17,4 +17,4 @@ const app = async () => {
 
 setInterval(() => {
   app();
-}, 120000);
+}, 30000);

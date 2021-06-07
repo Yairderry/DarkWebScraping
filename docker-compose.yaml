@@ -11,16 +11,16 @@ services:
       - .:/app
       - "/app/node_modules"
     depends_on:
-      - ${MYSQL_HOST}
       - tor_proxy
+      - mysql_server
 
-  ${MYSQL_HOST}:
+  mysql_server:
     image: mysql:8.0
     environment:
-      - MYSQL_DATABASE=${MYSQL_DATABASE}
-      - MYSQL_USER=${MYSQL_USERNAME}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_USER: "${MYSQL_USERNAME}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
 
   tor_proxy:
     image: dperson/torproxy

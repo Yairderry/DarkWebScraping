@@ -4,12 +4,15 @@ const tr = require("tor-request");
 const cheerio = require("cheerio");
 const { getAllPasteIds } = require("./queries");
 
+tr.setTorAddress("tor_proxy");
+
 const getIdsFromPage = async (page) => {
   return await new Promise((resolve, reject) => {
     tr.request(
       `http://nzxj65x32vh2fkhk.onion/all?page=${page}`,
       function (err, response, html) {
-        if (err || response.statusCode !== 200) reject(err);
+        console.log(err);
+        if (err || response.statusCode !== 200) return reject(err);
 
         const $ = cheerio.load(html);
 
