@@ -11,7 +11,6 @@ const getIdsFromPage = async (page) => {
     tr.request(
       `http://nzxj65x32vh2fkhk.onion/all?page=${page}`,
       function (err, response, html) {
-        console.log(err);
         if (err || response.statusCode !== 200) return reject(err);
 
         const $ = cheerio.load(html);

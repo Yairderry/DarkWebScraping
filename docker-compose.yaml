@@ -1,7 +1,15 @@
 version: "3.8"
 
 services:
+  mysql_server:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: "${MYSQL_DATABASE}"
+      MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
+
   app:
+    restart: always
     build:
       context: .
       dockerfile: Dockerfile
@@ -14,15 +22,8 @@ services:
       - tor_proxy
       - mysql_server
 
-  mysql_server:
-    image: mysql:8.0
-    environment:
-      MYSQL_DATABASE: "${MYSQL_DATABASE}"
-      MYSQL_USER: "${MYSQL_USERNAME}"
-      MYSQL_PASSWORD: "${MYSQL_PASSWORD}"
-      MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
-
   tor_proxy:
+    restart: always
     image: dperson/torproxy
     ports:
       - 9050:9050
