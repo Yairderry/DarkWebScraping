@@ -8,16 +8,26 @@ services:
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
 
-  app:
+  scraper:
     restart: always
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: ./scraper
+    ports:
+      - 8080:8080
+    volumes:
+      - .:/scraper-volume
+      - "/scraper-volume/node_modules"
+    depends_on:
+      - tor_proxy
+      - mysql_server
+
+  backend:
+    restart: always
+    build: ./backend
     ports:
       - 80:80
     volumes:
-      - .:/app
-      - "/app/node_modules"
+      - .:/backend-volume
+      - "/backend-volume/node_modules"
     depends_on:
       - tor_proxy
       - mysql_server

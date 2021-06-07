@@ -1,14 +1,12 @@
 FROM node:12
 
-WORKDIR /app
+WORKDIR /backend
 
-COPY package*.json ./
+COPY package.json ./
 
 RUN npm i
 
 COPY . .
-
-ENV PORT=80
 
 EXPOSE 80
 

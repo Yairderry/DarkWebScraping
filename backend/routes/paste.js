@@ -4,8 +4,14 @@ const { getAllPastes } = require("../queries");
 paste.use(express.json());
 
 paste.get("/all", async (req, res) => {
+  const { title, content, author } = req.query;
+
   try {
-    const pastes = await getAllPastes({ title: "bitcoin", content: "works" });
+    const pastes = await getAllPastes({
+      title: title ? title : "",
+      content: content ? content : "",
+      author: author ? author : "",
+    });
     res.json(pastes);
   } catch (error) {
     console.log(error);
