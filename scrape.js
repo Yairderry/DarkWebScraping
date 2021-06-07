@@ -4,6 +4,7 @@ const tr = require("tor-request");
 const cheerio = require("cheerio");
 const { getAllPasteIds } = require("./queries");
 
+// remove proxy if you're using localhost
 tr.setTorAddress("tor_proxy");
 
 const getIdsFromPage = async (page) => {
@@ -62,6 +63,7 @@ const scrapeAllIds = async (page, pagePasteIds = []) => {
     pagePasteIds.push(...pasteIds);
     return scrapeAllIds(++page, pagePasteIds);
   } catch (error) {
+    console.log(error);
     return pagePasteIds;
   }
 };

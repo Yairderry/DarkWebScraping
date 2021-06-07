@@ -14,5 +14,7 @@ const app = async () => {
 };
 
 setInterval(() => {
-  return app();
+  app()
+    .then((data) => console.log(data))
+    .catch((err) => console.log(err));
 }, 30000);
