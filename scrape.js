@@ -2,6 +2,7 @@
 
 const tr = require("tor-request");
 const cheerio = require("cheerio");
+const { getAllPasteIds } = require("./queries");
 
 const getIdsFromPage = async (page) => {
   return await new Promise((resolve, reject) => {
@@ -53,23 +54,32 @@ const getPasteFromId = async (pasteId) => {
   });
 };
 
-const getAllIds = async (page, pagePasteIds = []) => {
+const scrapeAllIds = async (page, pagePasteIds = []) => {
   try {
     const pasteIds = await getIdsFromPage(page);
     pagePasteIds.push(...pasteIds);
-    return getAllIds(++page, pagePasteIds);
+    return scrapeAllIds(++page, pagePasteIds);
   } catch (error) {
     return pagePasteIds;
   }
 };
 
-const getPaste = async (id) => {
-  try {
-  } catch (error) {}
+const findNewPastes = async () => {
+  const checkPasteIds = await scrapeAllIds(1);
+  const currentPasteIds = await getAllPasteIds();
+  const newPasteIds = checkPasteIds.filter(
+    (pasteId) => !currentPasteIds.includes(pasteId)
+  );
+
+  if (newPasteIds.length <= 0) return;
+
+  const pastes = await Promise.all(
+    newPasteIds.map(async (id) => await getPasteFromId(id))
+  );
+
+  return pastes;
 };
 
 module.exports = {
-  getAllIds,
-  getPaste,
-  getPasteFromId,
+  findNewPastes,
 };

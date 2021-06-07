@@ -19,6 +19,7 @@
   },
   "scripts": {
     "start": "node index.js",
+    "setup": "npx sequelize db:migrate && npx sequelize db:seed:all",
     "dev": "nodemon index.js"
   },
   "author": "",
