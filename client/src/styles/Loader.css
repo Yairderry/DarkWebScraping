@@ -1,0 +1,31 @@
+.darkBackground {
+  height: 100vh;
+  width: 100vw;
+  background-color: rgba(0, 0, 0, 0.6);
+  position: fixed;
+  display: flex;
+  align-items: center;
+  z-index: 6;
+}
+
+.loader {
+  height: 4vw;
+  width: 4vw;
+  border-radius: 50%;
+  background-color: whitesmoke;
+  z-index: 10;
+  animation: move 1.5s ease-out infinite;
+  position: absolute;
+}
+
+@keyframes move {
+  0% {
+    transform: translateX(10vw);
+  }
+  50% {
+    transform: translateX(85vw);
+  }
+  100% {
+    transform: translateX(10vw);
+  }
+}

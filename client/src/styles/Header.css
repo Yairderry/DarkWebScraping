@@ -1,0 +1,16 @@
+html {
+  scroll-behavior: smooth;
+}
+
+.scrollUp {
+  position: fixed;
+  background-color: white;
+  border: none;
+  border-radius: 50%;
+  z-index: 4;
+}
+
+.scrollUp {
+  top: 30px;
+  right: 30px;
+}

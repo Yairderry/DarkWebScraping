@@ -1,0 +1,48 @@
+.paste {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 90vw;
+  height: 95%;
+  border: 1px solid black;
+  border-radius: 5px;
+  padding: 15px;
+  padding-bottom: 5px;
+  margin: 10px 0px;
+  overflow: hidden;
+}
+
+.paste:hover .options {
+  display: block;
+}
+
+.paste-content {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  margin: 15px 0px;
+  max-height: 15vh;
+  overflow: hidden;
+  white-space: pre-wrap;
+}
+
+.buttons {
+  align-self: flex-end;
+}
+
+.button {
+  margin: 5px;
+}
+
+.paste-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.options {
+  display: none;
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
