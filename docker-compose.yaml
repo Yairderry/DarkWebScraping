@@ -1,6 +1,15 @@
 version: "3.8"
 
 services:
+  client:
+    restart: always
+    build: ./client
+    ports:
+      - 80:80
+    volumes:
+      - .:/client-volume
+      - "/client-volume/node_modules"
+
   mysql_server:
     image: mysql:8.0
     restart: always
@@ -24,7 +33,7 @@ services:
     restart: always
     build: ./backend
     ports:
-      - 80:80
+      - 8090:8090
     volumes:
       - .:/backend-volume
       - "/backend-volume/node_modules"

@@ -16,13 +16,13 @@ function App() {
   const getPastes = () => {
     axios
       .get(
-        `http://localhost/api/paste/all?limit=15&offset=${
+        `http://backend:8090/api/paste/all?limit=15&offset=${
           (pastes.page - 1) * 15
         }`
       )
       .then(({ data }) => {
         const state = {
-          count: data.rows.length,
+          count: data.rows.length + pastes.list.length,
           list: [...new Set([...pastes.list, ...data.rows])],
           hasMore: pastes.count < data.count,
           page: ++pastes.page,
@@ -40,13 +40,13 @@ function App() {
     <div className="App">
       <Header />
       <InfiniteScroll
-        dataLength={pastes.list.length} //This is important field to render the next data
+        dataLength={pastes.list.length}
         next={getPastes}
         hasMore={pastes.hasMore}
         loader={<h4>Loading...</h4>}
         endMessage={
           <p style={{ textAlign: "center" }}>
-            <b>Yay! You have seen it all</b>
+            <b>You're all caught up!</b>
           </p>
         }
       >

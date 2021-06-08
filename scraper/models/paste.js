@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       pasteId: DataTypes.STRING,
       title: DataTypes.STRING,
-      content: DataTypes.STRING(10000),
+      content: DataTypes.TEXT("long"),
       author: DataTypes.STRING,
       date: DataTypes.DATE,
     },
