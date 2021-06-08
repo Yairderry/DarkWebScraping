@@ -1,5 +1,4 @@
 const { Paste } = require("./models");
-const Sequelize = require("sequelize");
 const { Op } = require("sequelize");
 
 const getAllPastes = async (params) => {
@@ -10,18 +9,28 @@ const getAllPastes = async (params) => {
     return pastesIds.map((paste) => paste.toJSON());
   }
 
-  const { title, content, author, date } = params;
+  const { title, content, author, limit, offset } = params;
+
   const where = {};
+
   if (title) where.title = { [Op.like]: `%${title}%` };
   if (content) where.content = { [Op.like]: `%${content}%` };
   if (author) where.author = { [Op.like]: `%${author}%` };
 
-  const pastesIds = await Paste.findAll({
+  const limitOffset = {};
+
+  if (limit) limitOffset.limit = Number(limit);
+  if (offset) limitOffset.offset = Number(offset);
+
+  const pastesIds = await Paste.findAndCountAll({
     attributes: { exclude: ["pasteId", "createdAt", "updatedAt"] },
+    ...limitOffset,
     where,
   });
 
-  return pastesIds.map((paste) => paste.toJSON());
+  pastesIds.rows.map((paste) => paste.toJSON());
+
+  return pastesIds;
 };
 
 module.exports = {
