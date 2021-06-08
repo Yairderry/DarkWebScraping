@@ -1,7 +1,7 @@
 import React from "react";
 import "../styles/SearchArea.css";
 
-export default function SearchArea() {
+export default function SearchArea({ inputRef, filterPastes }) {
   const labels = [
     "Help",
     "Tech",
@@ -17,7 +17,13 @@ export default function SearchArea() {
   ];
   return (
     <div className="search-area">
-      <input id="search-input" name="Search-text" placeholder="Filter pastes" />
+      <input
+        ref={inputRef}
+        onChange={filterPastes}
+        id="search-input"
+        name="Search-text"
+        placeholder="Filter pastes"
+      />
       <div className="dropdown">
         <span className="drop-ntn">Filter By Labels</span>
         <div className="dropdown-content">

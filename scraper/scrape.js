@@ -5,7 +5,7 @@ const cheerio = require("cheerio");
 const { getAllPasteIds } = require("./queries");
 
 // remove proxy if you're using localhost
-// tr.setTorAddress("tor_proxy");
+tr.setTorAddress("tor_proxy");
 
 const getIdsFromPage = async (page) => {
   return await new Promise((resolve, reject) => {

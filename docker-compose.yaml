@@ -1,21 +1,18 @@
 version: "3.8"
 
 services:
-  client:
-    restart: always
-    build: ./client
-    ports:
-      - 80:80
-    volumes:
-      - .:/client-volume
-      - "/client-volume/node_modules"
-
   mysql_server:
     image: mysql:8.0
     restart: always
     environment:
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
+
+  tor_proxy:
+    restart: always
+    image: dperson/torproxy
+    ports:
+      - 9050:9050
 
   scraper:
     restart: always
@@ -40,8 +37,13 @@ services:
     depends_on:
       - mysql_server
 
-  tor_proxy:
+  client:
     restart: always
-    image: dperson/torproxy
+    build: ./client
     ports:
-      - 9050:9050
+      - 80:80
+    volumes:
+      - .:/client-volume
+      - "/client-volume/node_modules"
+    depends_on:
+      - backend
