@@ -11,7 +11,8 @@ const fs = require("fs");
 
 const getIdsFromPage = async (page) => {
   return await new Promise((resolve, reject) => {
-    const { pages, link } = getYamlConfig("pasteIds");
+    const props = getYamlConfig(["pasteIds"]);
+    const { pages, link } = props[0];
     tr.request(`${pages.URL}${page}`, function (err, response, html) {
       if (err || response.statusCode !== 200) return reject(err);
 
@@ -32,27 +33,28 @@ const getIdsFromPage = async (page) => {
 
 const getPasteFromId = async (pasteId) => {
   return await new Promise((resolve, reject) => {
-    const pastes = getYamlConfig("pastes");
+    const props = getYamlConfig(["pastes", "name"]);
+    const [pastes, name] = [props[0], props[1]];
     tr.request(`${pastes.URL}${pasteId}`, function (err, response, html) {
       if (err || response.statusCode !== 200) reject(err);
 
       const $ = cheerio.load(html);
 
-      // console.log("content", $("ol").text());
-
-      const row = $(pastes.row.selector);
+      // const row = $(pastes.row.selector);
       const title = getData(pastes.title, $);
       const content = getData(pastes.content, $);
       const date = getData(pastes.date, $);
       const author = getData(pastes.author, $);
+      const site = name;
 
       const paste = {
         pasteId,
+        site,
         title,
         content,
         author,
         date: pastes.date.ago
-          ? calculateDate(row, pastes.date.ago)
+          ? calculateDate($(pastes.date.selector), pastes.date.ago)
           : new Date(date),
       };
 
@@ -65,7 +67,8 @@ const getPasteFromId = async (pasteId) => {
 
 const scrapeAllIds = async (page, pagePasteIds = []) => {
   try {
-    const { pages } = getYamlConfig("pasteIds");
+    const props = getYamlConfig(["pasteIds"]);
+    const { pages } = props[0];
     if (pages.limit && page >= pages.limit)
       throw new Error("You've reached the limit you set!");
     const pasteIds = await getIdsFromPage(page);
@@ -79,7 +82,8 @@ const scrapeAllIds = async (page, pagePasteIds = []) => {
 };
 
 const findNewPastes = async () => {
-  const { pages } = getYamlConfig("pasteIds");
+  const props = getYamlConfig(["pasteIds"]);
+  const { pages } = props[0];
   const checkPasteIds = await scrapeAllIds(pages.step.initial);
   const currentPasteIds = await getAllPasteIds();
   const newPasteIds = checkPasteIds.filter(
@@ -96,11 +100,11 @@ const findNewPastes = async () => {
 };
 
 // helper functions
-const getYamlConfig = (property) => {
+const getYamlConfig = (properties = []) => {
   try {
-    const raw = fs.readFileSync("./sites/stronghold-config.yaml");
+    const raw = fs.readFileSync("./sites/stikked-config.yaml");
     const data = YAML.load(raw);
-    return data[property];
+    return properties.map((prop) => data[prop]);
   } catch (error) {
     throw error;
   }
@@ -108,17 +112,15 @@ const getYamlConfig = (property) => {
 
 const getData = (config, $) => {
   const { regex, selector } = config;
-  // const rawData = parent.find(selector).text().trim();
   const rawData = $(selector).text().trim();
-  // console.log("rawData for", `${config.selector}`, $(config.selector).text().trim());
   let data = rawData;
 
   if (regex) {
     const { exp, flags, index } = regex;
     const dataRegex = new RegExp(exp ? exp : "", flags ? flags : "");
-    data = dataRegex.exec(rawData)[index ? index : 0];
+    const matches = dataRegex.exec(rawData);
+    data = matches[index ? index : 0];
   }
-  // console.log("data for", [config.selector], data);
 
   return data;
 };
