@@ -4,14 +4,18 @@
   align-items: center;
 }
 
-#search-input {
+#search-title-input,
+#search-content-input,
+#search-author-input {
   border: 1px solid black;
   border-radius: 15px;
   padding: 5px;
   font-size: 16px;
 }
 
-#search-input:focus {
+#search-title-input:focus,
+#search-content-input:focus,
+#search-author-input:focus {
   outline: none;
 }
 

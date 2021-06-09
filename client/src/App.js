@@ -14,16 +14,26 @@ function App() {
   };
   const [pastes, setPastes] = useState(initialPastes);
 
-  const inputRef = useRef();
+  const titleInputRef = useRef();
+  const contentInputRef = useRef();
+  const authorInputRef = useRef();
 
   const getPastes = (params) => {
-    const title = inputRef.current.value
-      ? `title=${inputRef.current.value}&`
+    const title = titleInputRef.current.value
+      ? `title=${titleInputRef.current.value}&`
+      : "";
+
+    const content = contentInputRef.current.value
+      ? `content=${contentInputRef.current.value}&`
+      : "";
+
+    const author = authorInputRef.current.value
+      ? `author=${authorInputRef.current.value}&`
       : "";
 
     axios
       .get(
-        `http://localhost:8090/api/paste/all?${title}&limit=15&offset=${
+        `http://localhost:8090/api/paste/all?${title}${content}${author}&limit=15&offset=${
           (pastes.page - 1) * 15
         }`
       )
@@ -42,9 +52,19 @@ function App() {
   let cancelToken;
   const filterPastes = () => {
     setPastes(initialPastes);
-    const title = inputRef.current.value
-      ? `title=${inputRef.current.value}&`
+    const title = titleInputRef.current.value
+      ? `title=${titleInputRef.current.value}&`
       : "";
+
+    const content = contentInputRef.current.value
+      ? `content=${contentInputRef.current.value}&`
+      : "";
+
+    const author = authorInputRef.current.value
+      ? `author=${authorInputRef.current.value}&`
+      : "";
+
+    console.log(title, content, author);
 
     if (cancelToken)
       cancelToken.cancel("Operation canceled due to new request.");
@@ -52,9 +72,12 @@ function App() {
     cancelToken = axios.CancelToken.source();
 
     axios
-      .get(`http://localhost:8090/api/paste/all?${title}&limit=15&offset=0`, {
-        cancelToken: cancelToken.token,
-      })
+      .get(
+        `http://localhost:8090/api/paste/all?${title}${content}${author}&limit=15&offset=0`,
+        {
+          cancelToken: cancelToken.token,
+        }
+      )
       .then(({ data }) => {
         const state = {
           count: data.rows.length,
@@ -76,7 +99,12 @@ function App() {
 
   return (
     <div className="App">
-      <Header inputRef={inputRef} filterPastes={filterPastes} />
+      <Header
+        titleInputRef={titleInputRef}
+        filterPastes={filterPastes}
+        contentInputRef={contentInputRef}
+        authorInputRef={authorInputRef}
+      />
       <InfiniteScroll
         dataLength={pastes.list.length}
         next={getPastes}
