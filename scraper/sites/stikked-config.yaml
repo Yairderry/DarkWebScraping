@@ -1,0 +1,60 @@
+name: stikked
+
+pasteIds:
+  pages:
+    URL: https://stikked.ch/lists/
+    step:
+      initial: 0
+      by: 20
+    limit: 20
+  link:
+    selector: "td.first a"
+    slice: 24
+
+pastes:
+  URL: https://stikked.ch/view/
+  title:
+    selector: .pagetitle.right
+  content:
+    selector: ol
+  author:
+    regex:
+      index: 1
+      exp: "From (.*), \\d+ .* ago"
+      flags: g
+    selector: .detail.by
+  date:
+    ago:
+      sec:
+        index: 1
+        exp: ", (\\d+) .* ago,"
+        flags: ig
+      min:
+        index: 1
+        exp: ", (\\d+) .* ago,"
+        flags: ig
+      hour:
+        index: 1
+        exp: ", (\\d+) .* ago,"
+        flags: ig
+      day:
+        index: 1
+        exp: ", (\\d+) .* ago,"
+        flags: ig
+      week:
+        index: 1
+        exp: ", (\\d+) .* ago,"
+        flags: ig
+      month:
+        index: 1
+        exp: ", (\\d+) .* ago,"
+        flags: ig
+      year:
+        index: 1
+        exp: ", (\\d+) .* ago,"
+        flags: ig
+    regex:
+      index: 1
+      exp: ", (\\d+) .* ago,"
+      flags: ig
+    selector: span.detail.by

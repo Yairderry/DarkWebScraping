@@ -6,15 +6,12 @@ pasteIds:
     step:
       initial: 1
       by: 1
-  row:
-    selector: "#list .row"
   link:
     selector: .btn.btn-success
+    slice: 30
 
 pastes:
-  URL: http://nzxj65x32vh2fkhk.onion
-  row:
-    selector: .row
+  URL: http://nzxj65x32vh2fkhk.onion/
   title:
     selector: h4
   content:
@@ -26,7 +23,6 @@ pastes:
       flags: g
     selector: .col-sm-6
   date:
-    ago: false
     regex:
       index: 1
       exp: "at (\\d\\d \\w\\w\\w \\d\\d\\d\\d, \\d\\d:\\d\\d:\\d\\d UTC)"

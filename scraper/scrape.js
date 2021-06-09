@@ -11,21 +11,19 @@ const fs = require("fs");
 
 const getIdsFromPage = async (page) => {
   return await new Promise((resolve, reject) => {
-    const { pages, row, link } = getYamlConfig("pasteIds");
+    const { pages, link } = getYamlConfig("pasteIds");
     tr.request(`${pages.URL}${page}`, function (err, response, html) {
       if (err || response.statusCode !== 200) return reject(err);
 
       const $ = cheerio.load(html);
 
       const pastes = [];
-      $(row.selector).each((i, el) => {
-        const paste = $(el).find(link.selector).attr("href");
+      $(link.selector).each((i, el) => {
+        const paste = $(el).attr("href");
         pastes.push(paste);
       });
 
-      const pasteIds = pastes
-        .filter((paste, i) => (i + 1) % 3 === 0)
-        .map((pasteId) => pasteId.slice(30));
+      const pasteIds = pastes.map((pasteId) => pasteId.slice(link.slice));
 
       resolve(pasteIds);
     });
@@ -35,18 +33,30 @@ const getIdsFromPage = async (page) => {
 const getPasteFromId = async (pasteId) => {
   return await new Promise((resolve, reject) => {
     const pastes = getYamlConfig("pastes");
-    tr.request(`${pastes.URL}/${pasteId}`, function (err, response, html) {
+    tr.request(`${pastes.URL}${pasteId}`, function (err, response, html) {
       if (err || response.statusCode !== 200) reject(err);
 
       const $ = cheerio.load(html);
 
-      const row = $(pastes.row.selector);
-      const title = getData(row, pastes.title);
-      const content = getData(row, pastes.content);
-      const date = getData(row, pastes.date);
-      const author = getData(row, pastes.author);
+      // console.log("content", $("ol").text());
 
-      const paste = { pasteId, title, content, author, date: new Date(date) };
+      const row = $(pastes.row.selector);
+      const title = getData(pastes.title, $);
+      const content = getData(pastes.content, $);
+      const date = getData(pastes.date, $);
+      const author = getData(pastes.author, $);
+
+      const paste = {
+        pasteId,
+        title,
+        content,
+        author,
+        date: pastes.date.ago
+          ? calculateDate(row, pastes.date.ago)
+          : new Date(date),
+      };
+
+      console.log("paste", paste);
 
       resolve(paste);
     });
@@ -55,13 +65,15 @@ const getPasteFromId = async (pasteId) => {
 
 const scrapeAllIds = async (page, pagePasteIds = []) => {
   try {
-    const pasteIds = await getIdsFromPage(page);
     const { pages } = getYamlConfig("pasteIds");
+    if (pages.limit && page >= pages.limit)
+      throw new Error("You've reached the limit you set!");
+    const pasteIds = await getIdsFromPage(page);
 
     pagePasteIds.push(...pasteIds);
     return scrapeAllIds(page + pages.step.by, pagePasteIds);
   } catch (error) {
-    console.log(error);
+    console.log("error", error);
     return pagePasteIds;
   }
 };
@@ -94,9 +106,11 @@ const getYamlConfig = (property) => {
   }
 };
 
-const getData = (parent, config) => {
+const getData = (config, $) => {
   const { regex, selector } = config;
-  const rawData = parent.find(selector).text().trim();
+  // const rawData = parent.find(selector).text().trim();
+  const rawData = $(selector).text().trim();
+  // console.log("rawData for", `${config.selector}`, $(config.selector).text().trim());
   let data = rawData;
 
   if (regex) {
@@ -104,8 +118,30 @@ const getData = (parent, config) => {
     const dataRegex = new RegExp(exp ? exp : "", flags ? flags : "");
     data = dataRegex.exec(rawData)[index ? index : 0];
   }
+  // console.log("data for", [config.selector], data);
 
   return data;
+};
+
+const generateRegex = (raw, regex) => {
+  const { exp, flags, index } = regex;
+  const dataRegex = new RegExp(exp ? exp : "", flags ? flags : "");
+  return dataRegex.exec(raw)[index ? index : 0];
+};
+
+const calculateDate = (rawData, ago) => {
+  const { sec, min, hour, day, week, month, year } = ago;
+  const totalTime =
+    (sec ? generateRegex(rawData, sec) * 1000 : 0) +
+    (min ? generateRegex(rawData, min) * 60000 : 0) +
+    (hour ? generateRegex(rawData, hour) * 3600000 : 0) +
+    (day ? generateRegex(rawData, day) * 86400000 : 0) +
+    (week ? generateRegex(rawData, week) * 604800000 : 0) +
+    (month ? generateRegex(rawData, month) * 2628000000 : 0) +
+    (year ? generateRegex(rawData, year) * 365 * 86400000 : 0);
+
+  const now = new Date().getTime();
+  return new Date(now - totalTime);
 };
 
 module.exports = {

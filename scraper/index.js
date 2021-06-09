@@ -6,15 +6,19 @@ const { addPastes } = require("./queries");
 const app = async () => {
   try {
     const pastes = await findNewPastes();
-    const response = await addPastes(pastes);
+    // const response = await addPastes(pastes);
     return response.map((paste) => paste.toJSON());
   } catch (error) {
     return error;
   }
 };
 
-setInterval(() => {
-  app()
-    .then((data) => console.log(data))
-    .catch((err) => console.log(err));
-}, 30000);
+app()
+  .then((data) => console.log(data))
+  .catch((err) => console.log(err));
+
+// setInterval(() => {
+//   app()
+//     .then((data) => console.log(data))
+//     .catch((err) => console.log(err));
+// }, 30000);
