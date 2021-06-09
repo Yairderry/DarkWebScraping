@@ -64,8 +64,6 @@ function App() {
       ? `author=${authorInputRef.current.value}&`
       : "";
 
-    console.log(title, content, author);
-
     if (cancelToken)
       cancelToken.cancel("Operation canceled due to new request.");
 

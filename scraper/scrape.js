@@ -4,7 +4,13 @@ const tr = require("tor-request");
 const cheerio = require("cheerio");
 const { getAllPasteIds } = require("./queries");
 const YAML = require("js-yaml");
+const node_ner = require("node-ner");
 const fs = require("fs");
+const { resolve } = require("path");
+
+const ner = new node_ner({
+  install_path: "./stanford-ner-2017-06-09",
+});
 
 // remove proxy if you're using localhost
 // tr.setTorAddress("tor_proxy");
@@ -35,17 +41,20 @@ const getPasteFromId = async (pasteId) => {
   return await new Promise((resolve, reject) => {
     const props = getYamlConfig(["pastes", "name"]);
     const [pastes, name] = [props[0], props[1]];
-    tr.request(`${pastes.URL}${pasteId}`, function (err, response, html) {
+    tr.request(`${pastes.URL}${pasteId}`, async function (err, response, html) {
       if (err || response.statusCode !== 200) reject(err);
 
       const $ = cheerio.load(html);
 
-      // const row = $(pastes.row.selector);
       const title = getData(pastes.title, $);
       const content = getData(pastes.content, $);
       const date = getData(pastes.date, $);
       const author = getData(pastes.author, $);
       const site = name;
+
+      const entities = await getEntities(`${title} ${content}`, pasteId);
+      // console.log(`${title} ${content}`);
+      // console.log(entities);
 
       const paste = {
         pasteId,
@@ -56,6 +65,7 @@ const getPasteFromId = async (pasteId) => {
         date: pastes.date.ago
           ? calculateDate($(pastes.date.selector), pastes.date.ago)
           : new Date(date),
+        labels: Object.keys(entities),
       };
 
       console.log("paste", paste);
@@ -102,7 +112,7 @@ const findNewPastes = async () => {
 // helper functions
 const getYamlConfig = (properties = []) => {
   try {
-    const raw = fs.readFileSync("./sites/stikked-config.yaml");
+    const raw = fs.readFileSync("./sites/paste-config.yaml");
     const data = YAML.load(raw);
     return properties.map((prop) => data[prop]);
   } catch (error) {
@@ -144,6 +154,23 @@ const calculateDate = (rawData, ago) => {
 
   const now = new Date().getTime();
   return new Date(now - totalTime);
+};
+
+const getEntities = (text, pasteId) => {
+  return new Promise((resolve) => {
+    const FILE_NAME = `${pasteId}.txt`;
+    fs.writeFileSync(FILE_NAME, text);
+
+    ner.fromFile(
+      `C:\\Users\\derry\\Documents\\GitHub\\DarkWebScraping\\scraper\\${FILE_NAME}`,
+      function (entities) {
+        fs.unlinkSync(
+          `C:\\Users\\derry\\Documents\\GitHub\\DarkWebScraping\\scraper\\${FILE_NAME}`
+        );
+        resolve(entities);
+      }
+    );
+  });
 };
 
 module.exports = {
