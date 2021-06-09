@@ -1,0 +1,34 @@
+name: stronghold
+
+pasteIds:
+  pages:
+    URL: http://nzxj65x32vh2fkhk.onion/all?page=
+    step:
+      initial: 1
+      by: 1
+  row:
+    selector: "#list .row"
+  link:
+    selector: .btn.btn-success
+
+pastes:
+  URL: http://nzxj65x32vh2fkhk.onion
+  row:
+    selector: .row
+  title:
+    selector: h4
+  content:
+    selector: .well.well-sm.well-white.pre
+  author:
+    regex:
+      index: 1
+      exp: "Posted by (.*) at"
+      flags: g
+    selector: .col-sm-6
+  date:
+    ago: false
+    regex:
+      index: 1
+      exp: "at (\\d\\d \\w\\w\\w \\d\\d\\d\\d, \\d\\d:\\d\\d:\\d\\d UTC)"
+      flags: ig
+    selector: .col-sm-6

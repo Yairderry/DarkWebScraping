@@ -34,7 +34,6 @@ function App() {
           hasMore: pastes.count < data.count,
           page: ++pastes.page,
         };
-        console.log(state);
         setPastes(state);
       })
       .catch((err) => console.log(err));
@@ -63,7 +62,6 @@ function App() {
           hasMore: pastes.count < data.count,
           page: 2,
         };
-        console.log(state);
 
         setPastes(state);
       })

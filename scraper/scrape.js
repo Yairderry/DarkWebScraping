@@ -3,65 +3,63 @@
 const tr = require("tor-request");
 const cheerio = require("cheerio");
 const { getAllPasteIds } = require("./queries");
+const YAML = require("js-yaml");
+const fs = require("fs");
 
 // remove proxy if you're using localhost
-tr.setTorAddress("tor_proxy");
+// tr.setTorAddress("tor_proxy");
 
 const getIdsFromPage = async (page) => {
   return await new Promise((resolve, reject) => {
-    tr.request(
-      `http://nzxj65x32vh2fkhk.onion/all?page=${page}`,
-      function (err, response, html) {
-        if (err || response.statusCode !== 200) return reject(err);
+    const { pages, row, link } = getYamlConfig("pasteIds");
+    tr.request(`${pages.URL}${page}`, function (err, response, html) {
+      if (err || response.statusCode !== 200) return reject(err);
 
-        const $ = cheerio.load(html);
+      const $ = cheerio.load(html);
 
-        const pastes = [];
-        $("#list .row").each((i, el) => {
-          const paste = $(el).find(".btn.btn-success").attr("href");
-          pastes.push(paste);
-        });
+      const pastes = [];
+      $(row.selector).each((i, el) => {
+        const paste = $(el).find(link.selector).attr("href");
+        pastes.push(paste);
+      });
 
-        const pasteIds = pastes
-          .filter((paste, i) => (i + 1) % 3 === 0)
-          .map((pasteId) => pasteId.slice(30));
+      const pasteIds = pastes
+        .filter((paste, i) => (i + 1) % 3 === 0)
+        .map((pasteId) => pasteId.slice(30));
 
-        resolve(pasteIds);
-      }
-    );
+      resolve(pasteIds);
+    });
   });
 };
 
 const getPasteFromId = async (pasteId) => {
   return await new Promise((resolve, reject) => {
-    tr.request(
-      `http://nzxj65x32vh2fkhk.onion/${pasteId}`,
-      function (err, response, html) {
-        if (err || response.statusCode !== 200) reject(err);
+    const pastes = getYamlConfig("pastes");
+    tr.request(`${pastes.URL}/${pasteId}`, function (err, response, html) {
+      if (err || response.statusCode !== 200) reject(err);
 
-        const $ = cheerio.load(html);
+      const $ = cheerio.load(html);
 
-        const row = $(".row");
-        const title = row.find("h4").text().trim();
-        const content = row.find(".well.well-sm.well-white.pre").text().trim();
-        const info = row.find(".col-sm-6").text().trim().split(" ");
-        const author = info[2];
-        info[8] = info[8].slice(0, 3);
-        const date = new Date(info.slice(4, 9).join(" "));
+      const row = $(pastes.row.selector);
+      const title = getData(row, pastes.title);
+      const content = getData(row, pastes.content);
+      const date = getData(row, pastes.date);
+      const author = getData(row, pastes.author);
 
-        const paste = { pasteId, title, content, author, date };
+      const paste = { pasteId, title, content, author, date: new Date(date) };
 
-        resolve(paste);
-      }
-    );
+      resolve(paste);
+    });
   });
 };
 
 const scrapeAllIds = async (page, pagePasteIds = []) => {
   try {
     const pasteIds = await getIdsFromPage(page);
+    const { pages } = getYamlConfig("pasteIds");
+
     pagePasteIds.push(...pasteIds);
-    return scrapeAllIds(++page, pagePasteIds);
+    return scrapeAllIds(page + pages.step.by, pagePasteIds);
   } catch (error) {
     console.log(error);
     return pagePasteIds;
@@ -69,7 +67,8 @@ const scrapeAllIds = async (page, pagePasteIds = []) => {
 };
 
 const findNewPastes = async () => {
-  const checkPasteIds = await scrapeAllIds(1);
+  const { pages } = getYamlConfig("pasteIds");
+  const checkPasteIds = await scrapeAllIds(pages.step.initial);
   const currentPasteIds = await getAllPasteIds();
   const newPasteIds = checkPasteIds.filter(
     (pasteId) => !currentPasteIds.includes(pasteId)
@@ -82,6 +81,31 @@ const findNewPastes = async () => {
   );
 
   return pastes;
+};
+
+// helper functions
+const getYamlConfig = (property) => {
+  try {
+    const raw = fs.readFileSync("./sites/stronghold-config.yaml");
+    const data = YAML.load(raw);
+    return data[property];
+  } catch (error) {
+    throw error;
+  }
+};
+
+const getData = (parent, config) => {
+  const { regex, selector } = config;
+  const rawData = parent.find(selector).text().trim();
+  let data = rawData;
+
+  if (regex) {
+    const { exp, flags, index } = regex;
+    const dataRegex = new RegExp(exp ? exp : "", flags ? flags : "");
+    data = dataRegex.exec(rawData)[index ? index : 0];
+  }
+
+  return data;
 };
 
 module.exports = {
