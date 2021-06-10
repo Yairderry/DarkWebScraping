@@ -5,11 +5,11 @@ import Info from "./Info";
 import "../styles/Paste.css";
 
 export default function Paste({ paste }) {
-  const { title, content, author, date } = paste;
+  const { title, content, author, date, PasteLabels } = paste;
   return (
     <div className="paste">
       <Content title={title} content={content} />
-      <Info author={author} date={date} />
+      <Info author={author} date={date} PasteLabels={PasteLabels} />
     </div>
   );
 }

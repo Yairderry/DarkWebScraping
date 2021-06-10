@@ -30,11 +30,15 @@ function App() {
   };
 
   const toggleLabelsFiler = (e) => {
-    const label = e.target.innerText;
+    const label = e.target;
+    const value = label.innerText;
+
+    label.classList.toggle("checked");
+
     setLabelsFilter(
-      labelsFilter.includes(label)
-        ? labelsFilter.filter((labelFilter) => labelFilter !== label)
-        : labelsFilter.concat(label)
+      labelsFilter.includes(value)
+        ? labelsFilter.filter((labelFilter) => labelFilter !== value)
+        : labelsFilter.concat(value)
     );
   };
 
