@@ -1,4 +1,4 @@
-const { Paste } = require("./models");
+const { Paste, PasteLabel } = require("./models");
 const { Op } = require("sequelize");
 
 const getAllPastes = async (params) => {
@@ -26,6 +26,7 @@ const getAllPastes = async (params) => {
     attributes: { exclude: ["pasteId", "createdAt", "updatedAt"] },
     ...limitOffset,
     where,
+    include: { model: PasteLabel, attributes: ["label"] },
   });
 
   pastesIds.rows.map((paste) => paste.toJSON());
