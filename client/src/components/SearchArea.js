@@ -6,20 +6,9 @@ export default function SearchArea({
   contentInputRef,
   authorInputRef,
   filterPastes,
+  labels,
+  toggleLabelsFiler,
 }) {
-  const labels = [
-    "Help",
-    "Tech",
-    "Guidelines",
-    "Corvid",
-    "Api",
-    "Collapse",
-    "Expand",
-    "Problem",
-    "Login",
-    "Tutorial",
-    "View Count",
-  ];
   return (
     <div className="search-area">
       <input
@@ -44,10 +33,15 @@ export default function SearchArea({
         placeholder="Enter title name or part of it"
       />
       <div className="dropdown">
-        <span className="drop-ntn">Filter By Labels</span>
+        <span className="drop-btn">Filter By Labels</span>
         <div className="dropdown-content">
           {labels.map((label, i) => (
-            <span className="label-filter" key={i} value={label}>
+            <span
+              className="label-filter"
+              key={i}
+              value={label}
+              onClick={toggleLabelsFiler}
+            >
               {label}
             </span>
           ))}

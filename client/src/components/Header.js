@@ -8,6 +8,8 @@ export default function Header({
   contentInputRef,
   authorInputRef,
   filterPastes,
+  labels,
+  toggleLabelsFiler,
 }) {
   return (
     <header>
@@ -17,6 +19,8 @@ export default function Header({
         contentInputRef={contentInputRef}
         titleInputRef={titleInputRef}
         filterPastes={filterPastes}
+        labels={labels}
+        toggleLabelsFiler={toggleLabelsFiler}
       />
     </header>
   );

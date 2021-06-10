@@ -1,6 +1,6 @@
 const express = require("express");
 const paste = express.Router();
-const { getAllPastes } = require("../queries");
+const { getAllPastes, getLabels } = require("../queries");
 paste.use(express.json());
 
 paste.get("/all", async (req, res) => {
@@ -16,6 +16,16 @@ paste.get("/all", async (req, res) => {
       offset,
     });
     res.json(pastes);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send(error.message);
+  }
+});
+
+paste.get("/labels", async (req, res) => {
+  try {
+    const labels = await getLabels();
+    res.json(labels);
   } catch (error) {
     console.log(error);
     res.status(500).send(error.message);

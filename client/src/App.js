@@ -13,10 +13,30 @@ function App() {
     hasMore: false,
   };
   const [pastes, setPastes] = useState(initialPastes);
+  const [labels, setLabels] = useState([]);
+  const [labelsFilter, setLabelsFilter] = useState([]);
 
   const titleInputRef = useRef();
   const contentInputRef = useRef();
   const authorInputRef = useRef();
+
+  const getLabels = () => {
+    axios
+      .get(`http://localhost:8090/api/paste/labels`)
+      .then(({ data }) => {
+        setLabels(data);
+      })
+      .catch((err) => console.log(err));
+  };
+
+  const toggleLabelsFiler = (e) => {
+    const label = e.target.innerText;
+    setLabelsFilter(
+      labelsFilter.includes(label)
+        ? labelsFilter.filter((labelFilter) => labelFilter !== label)
+        : labelsFilter.concat(label)
+    );
+  };
 
   const getPastes = (params) => {
     const title = titleInputRef.current.value
@@ -31,9 +51,11 @@ function App() {
       ? `author=${authorInputRef.current.value}&`
       : "";
 
+    const labels = labelsFilter.map((label) => `labels=${label}&`).join("");
+
     axios
       .get(
-        `http://localhost:8090/api/paste/all?${title}${content}${author}&limit=15&offset=${
+        `http://localhost:8090/api/paste/all?${title}${content}${author}${labels}&limit=15&offset=${
           (pastes.page - 1) * 15
         }`
       )
@@ -64,6 +86,8 @@ function App() {
       ? `author=${authorInputRef.current.value}&`
       : "";
 
+    const labels = labelsFilter.map((label) => `labels=${label}&`).join("");
+
     if (cancelToken)
       cancelToken.cancel("Operation canceled due to new request.");
 
@@ -71,7 +95,7 @@ function App() {
 
     axios
       .get(
-        `http://localhost:8090/api/paste/all?${title}${content}${author}&limit=15&offset=0`,
+        `http://localhost:8090/api/paste/all?${title}${content}${author}${labels}limit=15&offset=0`,
         {
           cancelToken: cancelToken.token,
         }
@@ -93,6 +117,7 @@ function App() {
 
   useEffect(() => {
     getPastes();
+    getLabels();
   }, []);
 
   return (
@@ -102,6 +127,8 @@ function App() {
         filterPastes={filterPastes}
         contentInputRef={contentInputRef}
         authorInputRef={authorInputRef}
+        labels={labels}
+        toggleLabelsFiler={toggleLabelsFiler}
       />
       <InfiniteScroll
         dataLength={pastes.list.length}

@@ -1,4 +1,5 @@
 const { Paste, PasteLabel } = require("./models");
+const Sequelize = require("sequelize");
 const { Op } = require("sequelize");
 
 const getAllPastes = async (params) => {
@@ -12,11 +13,22 @@ const getAllPastes = async (params) => {
   const { title, content, author, limit, labels, offset } = params;
 
   const where = {};
-  let include = { model: PasteLabel, attributes: ["label"] };
 
   if (title) where.title = { [Op.like]: `%${title}%` };
   if (content) where.content = { [Op.like]: `%${content}%` };
   if (author) where.author = { [Op.like]: `%${author}%` };
+  if (labels) {
+    const possiblePastes = await PasteLabel.findAll({
+      where: {
+        label: typeof labels === "string" ? labels : { [Op.or]: labels },
+      },
+      attributes: ["pasteId", "label"],
+      group: "pasteId",
+    });
+    where.id = {
+      [Op.in]: possiblePastes.map((paste) => paste.toJSON().pasteId),
+    };
+  }
 
   const limitOffset = {};
 
@@ -27,28 +39,28 @@ const getAllPastes = async (params) => {
     attributes: { exclude: ["pasteId", "createdAt", "updatedAt"] },
     ...limitOffset,
     where,
-    include,
+    include: { model: PasteLabel, attributes: ["label"] },
   });
 
-  pastesIds.rows = pastesIds.rows
-    .map((paste) => {
-      const newPaste = paste.toJSON();
-      newPaste.PasteLabels = newPaste.PasteLabels.map(({ label }) => label);
-      return newPaste;
-    })
-    .filter(({ PasteLabels }) => {
-      return typeof labels === "object"
-        ? labels.every((label) => PasteLabels.includes(label))
-        : typeof labels === "undefined"
-        ? PasteLabels
-        : PasteLabels.includes(labels);
-    });
-
-  pastesIds.count = pastesIds.rows.length;
+  pastesIds.rows = pastesIds.rows.map((paste) => {
+    const newPaste = paste.toJSON();
+    newPaste.PasteLabels = newPaste.PasteLabels.map(({ label }) => label);
+    return newPaste;
+  });
 
   return pastesIds;
 };
 
+const getLabels = async () => {
+  return (
+    await PasteLabel.findAll({
+      group: "label",
+      attributes: ["label"],
+    })
+  ).map(({ label }) => label);
+};
+
 module.exports = {
   getAllPastes,
+  getLabels,
 };
