@@ -6,7 +6,6 @@ const { getAllPasteIds } = require("./queries");
 const YAML = require("js-yaml");
 const node_ner = require("node-ner");
 const fs = require("fs");
-const { resolve } = require("path");
 
 const ner = new node_ner({
   install_path: "./stanford-ner-2017-06-09",
@@ -53,8 +52,6 @@ const getPasteFromId = async (pasteId) => {
       const site = name;
 
       const entities = await getEntities(`${title} ${content}`, pasteId);
-      // console.log(`${title} ${content}`);
-      // console.log(entities);
 
       const paste = {
         pasteId,
@@ -67,8 +64,6 @@ const getPasteFromId = async (pasteId) => {
           : new Date(date),
         labels: Object.keys(entities),
       };
-
-      console.log("paste", paste);
 
       resolve(paste);
     });
@@ -105,14 +100,13 @@ const findNewPastes = async () => {
   const pastes = await Promise.all(
     newPasteIds.map(async (id) => await getPasteFromId(id))
   );
-
   return pastes;
 };
 
 // helper functions
 const getYamlConfig = (properties = []) => {
   try {
-    const raw = fs.readFileSync("./sites/paste-config.yaml");
+    const raw = fs.readFileSync("./sites/stikked-config.yaml");
     const data = YAML.load(raw);
     return properties.map((prop) => data[prop]);
   } catch (error) {

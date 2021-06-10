@@ -1,7 +1,7 @@
 "use strict";
 const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
-  class Paste extends Model {
+  class PasteLabel extends Model {
     /**
      * Helper method for defining associations.
      * This method is not a part of Sequelize lifecycle.
@@ -11,21 +11,17 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  Paste.init(
+  PasteLabel.init(
     {
-      pasteId: DataTypes.STRING,
-      title: DataTypes.STRING,
-      content: DataTypes.TEXT("long"),
-      author: DataTypes.STRING,
-      site: DataTypes.STRING,
-      date: DataTypes.DATE,
+      pasteId: DataTypes.NUMBER,
+      label: DataTypes.STRING,
     },
     {
       sequelize,
-      modelName: "Paste",
-      tableName: "Pastes",
+      modelName: "PasteLabel",
+      tableName: "PasteLabels",
       underscored: true,
     }
   );
-  return Paste;
+  return PasteLabel;
 };

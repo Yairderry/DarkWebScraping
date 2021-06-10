@@ -1,4 +1,6 @@
-FROM node:12
+FROM node:latest
+
+RUN apt-get -y install default-jre
 
 WORKDIR /scraper
 
