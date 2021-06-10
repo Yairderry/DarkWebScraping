@@ -9,9 +9,10 @@ const getAllPastes = async (params) => {
     return pastesIds.map((paste) => paste.toJSON());
   }
 
-  const { title, content, author, limit, offset } = params;
+  const { title, content, author, limit, labels, offset } = params;
 
   const where = {};
+  let include = { model: PasteLabel, attributes: ["label"] };
 
   if (title) where.title = { [Op.like]: `%${title}%` };
   if (content) where.content = { [Op.like]: `%${content}%` };
@@ -26,10 +27,24 @@ const getAllPastes = async (params) => {
     attributes: { exclude: ["pasteId", "createdAt", "updatedAt"] },
     ...limitOffset,
     where,
-    include: { model: PasteLabel, attributes: ["label"] },
+    include,
   });
 
-  pastesIds.rows.map((paste) => paste.toJSON());
+  pastesIds.rows = pastesIds.rows
+    .map((paste) => {
+      const newPaste = paste.toJSON();
+      newPaste.PasteLabels = newPaste.PasteLabels.map(({ label }) => label);
+      return newPaste;
+    })
+    .filter(({ PasteLabels }) => {
+      return typeof labels === "object"
+        ? labels.every((label) => PasteLabels.includes(label))
+        : typeof labels === "undefined"
+        ? PasteLabels
+        : PasteLabels.includes(labels);
+    });
+
+  pastesIds.count = pastesIds.rows.length;
 
   return pastesIds;
 };

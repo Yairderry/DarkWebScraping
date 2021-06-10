@@ -4,7 +4,7 @@ const { getAllPastes } = require("../queries");
 paste.use(express.json());
 
 paste.get("/all", async (req, res) => {
-  const { title, content, author, limit, offset } = req.query;
+  const { title, content, author, limit, labels, offset } = req.query;
 
   try {
     const pastes = await getAllPastes({
@@ -12,6 +12,7 @@ paste.get("/all", async (req, res) => {
       content: content ? content : "",
       author: author ? author : "",
       limit,
+      labels,
       offset,
     });
     res.json(pastes);

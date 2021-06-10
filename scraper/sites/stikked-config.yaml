@@ -6,7 +6,7 @@ pasteIds:
     step:
       initial: 0
       by: 20
-    limit: 40
+    limit: 60
   link:
     selector: "td.first a"
     slice: 24

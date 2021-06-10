@@ -106,7 +106,7 @@ const findNewPastes = async () => {
 // helper functions
 const getYamlConfig = (properties = []) => {
   try {
-    const raw = fs.readFileSync("./sites/paste-config.yaml");
+    const raw = fs.readFileSync("./sites/stikked-config.yaml");
     const data = YAML.load(raw);
     return properties.map((prop) => data[prop]);
   } catch (error) {
