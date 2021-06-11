@@ -8,11 +8,11 @@ const node_ner = require("node-ner");
 const fs = require("fs");
 
 const ner = new node_ner({
-  install_path: "./stanford-ner-2017-06-09",
+  install_path: `${__dirname}/stanford-ner-2017-06-09`,
 });
 
 // remove proxy if you're using localhost
-tr.setTorAddress("tor_proxy");
+// tr.setTorAddress("tor_proxy");
 
 const getIdsFromPage = async (page) => {
   console.log("getting ids from page");
@@ -35,33 +35,37 @@ const getIdsFromPage = async (page) => {
 const getPasteFromId = async (pasteId) => {
   console.log("getting paste from paste id");
 
-  const props = getYamlConfig(["pastes", "name"]);
-  const [pastes, name] = [props[0], props[1]];
+  try {
+    const props = getYamlConfig(["pastes", "name"]);
+    const [pastes, name] = [props[0], props[1]];
 
-  const html = await torPromise(`${pastes.URL}${pasteId}`);
+    const html = await torPromise(`${pastes.URL}${pasteId}`);
 
-  const $ = cheerio.load(html);
+    const $ = cheerio.load(html);
 
-  const title = getData(pastes.title, $);
-  const content = getData(pastes.content, $);
-  const date = getData(pastes.date, $);
-  const author = getData(pastes.author, $);
-  const site = name;
+    const title = getData(pastes.title, $);
+    const content = getData(pastes.content, $);
+    const date = getData(pastes.date, $);
+    const author = getData(pastes.author, $);
+    const site = name;
 
-  console.log("getting entities");
-  const entities = await getEntities(`${title} ${content}`, pasteId);
+    console.log("getting entities");
+    const entities = await getEntities(`${title} ${content}`, pasteId);
 
-  return {
-    pasteId,
-    site,
-    title,
-    content,
-    author,
-    date: pastes.date.ago
-      ? calculateDate($(pastes.date.selector), pastes.date.ago)
-      : new Date(date),
-    labels: Object.keys(entities),
-  };
+    return {
+      pasteId,
+      site,
+      title,
+      content,
+      author,
+      date: pastes.date.ago
+        ? calculateDate($(pastes.date.selector), pastes.date.ago)
+        : new Date(date),
+      labels: Object.keys(entities),
+    };
+  } catch (error) {
+    console.log("there was an error while trying to get paste", pasteId);
+  }
 };
 
 const scrapeAllIds = async (page, pagePasteIds = []) => {
@@ -99,7 +103,7 @@ const findNewPastes = async () => {
 // helper functions
 const getYamlConfig = (properties = []) => {
   try {
-    const raw = fs.readFileSync("./sites/stronghold-config.yaml");
+    const raw = fs.readFileSync("./sites/paste-config.yaml");
     const data = YAML.load(raw);
     return properties.map((prop) => data[prop]);
   } catch (error) {
@@ -147,14 +151,23 @@ const calculateDate = (rawData, ago) => {
 };
 
 const getEntities = (text, pasteId) => {
-  return new Promise((resolve) => {
-    const FILE_NAME = `${pasteId}.txt`;
-    fs.writeFileSync(FILE_NAME, text);
+  return new Promise((resolve, reject) => {
+    try {
+      const FILE_NAME = `${pasteId}.txt`;
 
-    ner.fromFile(`${__dirname}/${FILE_NAME}`, function (entities) {
-      fs.unlinkSync(`${__dirname}/${FILE_NAME}`);
-      resolve(entities);
-    });
+      fs.writeFileSync(FILE_NAME, text);
+
+      const path = `${__dirname}\\${FILE_NAME}`;
+
+      ner.fromFile(path, function (entities) {
+        fs.unlinkSync(path);
+
+        resolve(entities);
+      });
+    } catch (error) {
+      console.log(error);
+      reject(error);
+    }
   });
 };
 

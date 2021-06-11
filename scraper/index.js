@@ -13,12 +13,12 @@ const app = async () => {
   }
 };
 
-// app()
-//   .then((data) => console.log(data))
-//   .catch((err) => console.log(err));
+app()
+  .then((data) => console.log(data))
+  .catch((err) => console.log(err));
 
-setInterval(() => {
-  app()
-    .then((data) => console.log(data))
-    .catch((err) => console.log(err));
-}, 120000);
+// setInterval(() => {
+//   app()
+//     .then((data) => console.log(data))
+//     .catch((err) => console.log(err));
+// }, 120000);

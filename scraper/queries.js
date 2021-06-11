@@ -21,12 +21,16 @@ const addPastes = async (pastes) => {
           date,
         });
 
+        console.log(paste);
+
         if (labels.length > 0) {
           const pasteLabels = labels.map((label) => ({
             pasteId: paste.id,
             label,
           }));
           const pasteLabel = await PasteLabel.bulkCreate(pasteLabels);
+
+          console.log(pasteLabel);
         }
 
         return paste;

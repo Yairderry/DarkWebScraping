@@ -6,6 +6,7 @@ pasteIds:
     step:
       initial: 1
       by: 1
+    limit: 2
   link:
     selector: .btn.btn-success
     slice: 30
