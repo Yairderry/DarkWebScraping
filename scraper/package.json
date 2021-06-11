@@ -19,7 +19,7 @@
     "sequelize-cli": "^6.2.0"
   },
   "scripts": {
-    "start": "npm run setup && node index.js",
+    "start": "npm run migrate && node index.js",
     "dev": "node index.js",
     "migrate": "npx sequelize db:migrate",
     "seed": "npx sequelize db:seed:all",
