@@ -21,4 +21,8 @@ app()
 //   app()
 //     .then((data) => console.log(data))
 //     .catch((err) => console.log(err));
+<<<<<<< HEAD
 // }, 120000);
+=======
+// }, 30000);
+>>>>>>> parent of 06a1271 (Tested the app on docker compose (worked))

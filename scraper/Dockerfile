@@ -1,6 +1,6 @@
-FROM node:14
+FROM node:latest
 
-RUN apt-get update && apt-get install -y openjdk-8-jdk
+RUN apt-get -y install default-jre
 
 WORKDIR /scraper
 

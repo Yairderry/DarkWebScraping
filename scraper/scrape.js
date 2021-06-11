@@ -15,24 +15,29 @@ const ner = new node_ner({
 // tr.setTorAddress("tor_proxy");
 
 const getIdsFromPage = async (page) => {
-  console.log("getting ids from page");
+  return await new Promise((resolve, reject) => {
+    const props = getYamlConfig(["pasteIds"]);
+    const { pages, link } = props[0];
+    tr.request(`${pages.URL}${page}`, function (err, response, html) {
+      if (err || response.statusCode !== 200) return reject(err);
 
-  const props = getYamlConfig(["pasteIds"]);
-  const { pages, link } = props[0];
+      const $ = cheerio.load(html);
 
-  const html = await torPromise(`${pages.URL}${page}`);
-  const $ = cheerio.load(html);
+      const pastes = [];
+      $(link.selector).each((i, el) => {
+        const paste = $(el).attr("href");
+        pastes.push(paste);
+      });
 
-  const pastes = [];
-  $(link.selector).each((i, el) => {
-    const paste = $(el).attr("href");
-    pastes.push(paste);
+      const pasteIds = pastes.map((pasteId) => pasteId.slice(link.slice));
+
+      resolve(pasteIds);
+    });
   });
-
-  return pastes.map((pasteId) => pasteId.slice(link.slice));
 };
 
 const getPasteFromId = async (pasteId) => {
+<<<<<<< HEAD
   console.log("getting paste from paste id");
 
   try {
@@ -66,19 +71,53 @@ const getPasteFromId = async (pasteId) => {
   } catch (error) {
     console.log("there was an error while trying to get paste", pasteId);
   }
+=======
+  return await new Promise((resolve, reject) => {
+    const props = getYamlConfig(["pastes", "name"]);
+    const [pastes, name] = [props[0], props[1]];
+    tr.request(`${pastes.URL}${pasteId}`, async function (err, response, html) {
+      if (err || response.statusCode !== 200) reject(err);
+
+      const $ = cheerio.load(html);
+
+      const title = getData(pastes.title, $);
+      const content = getData(pastes.content, $);
+      const date = getData(pastes.date, $);
+      const author = getData(pastes.author, $);
+      const site = name;
+
+      const entities = await getEntities(`${title} ${content}`, pasteId);
+
+      const paste = {
+        pasteId,
+        site,
+        title,
+        content,
+        author,
+        date: pastes.date.ago
+          ? calculateDate($(pastes.date.selector), pastes.date.ago)
+          : new Date(date),
+        labels: Object.keys(entities),
+      };
+
+      resolve(paste);
+    });
+  });
+>>>>>>> parent of 06a1271 (Tested the app on docker compose (worked))
 };
 
 const scrapeAllIds = async (page, pagePasteIds = []) => {
   try {
     const props = getYamlConfig(["pasteIds"]);
     const { pages } = props[0];
-    if (pages.limit && page > pages.limit)
+    if (pages.limit && page >= pages.limit)
       throw new Error("You've reached the limit you set!");
     const pasteIds = await getIdsFromPage(page);
 
     pagePasteIds.push(...pasteIds);
     return scrapeAllIds(page + pages.step.by, pagePasteIds);
   } catch (error) {
+    console.log("error", error);
     return pagePasteIds;
   }
 };
@@ -103,7 +142,11 @@ const findNewPastes = async () => {
 // helper functions
 const getYamlConfig = (properties = []) => {
   try {
+<<<<<<< HEAD
     const raw = fs.readFileSync("./sites/paste-config.yaml");
+=======
+    const raw = fs.readFileSync("./sites/stikked-config.yaml");
+>>>>>>> parent of 06a1271 (Tested the app on docker compose (worked))
     const data = YAML.load(raw);
     return properties.map((prop) => data[prop]);
   } catch (error) {
@@ -113,9 +156,6 @@ const getYamlConfig = (properties = []) => {
 
 const getData = (config, $) => {
   const { regex, selector } = config;
-
-  if (!selector) return config.default;
-
   const rawData = $(selector).text().trim();
   let data = rawData;
 
@@ -155,6 +195,7 @@ const getEntities = (text, pasteId) => {
     try {
       const FILE_NAME = `${pasteId}.txt`;
 
+<<<<<<< HEAD
       fs.writeFileSync(FILE_NAME, text);
 
       const path = `${__dirname}\\${FILE_NAME}`;
@@ -177,6 +218,17 @@ const torPromise = (url) => {
       if (err || response.statusCode !== 200) return reject(err);
       resolve(html);
     });
+=======
+    ner.fromFile(
+      `C:\\Users\\derry\\Documents\\GitHub\\DarkWebScraping\\scraper\\${FILE_NAME}`,
+      function (entities) {
+        fs.unlinkSync(
+          `C:\\Users\\derry\\Documents\\GitHub\\DarkWebScraping\\scraper\\${FILE_NAME}`
+        );
+        resolve(entities);
+      }
+    );
+>>>>>>> parent of 06a1271 (Tested the app on docker compose (worked))
   });
 };
 
