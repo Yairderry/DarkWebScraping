@@ -6,11 +6,7 @@ pasteIds:
     step:
       initial: 0
       by: 20
-<<<<<<< HEAD
-    limit: 20
-=======
-    limit: 60
->>>>>>> parent of 06a1271 (Tested the app on docker compose (worked))
+    limit: 80
   link:
     selector: "td.first a"
     slice: 24

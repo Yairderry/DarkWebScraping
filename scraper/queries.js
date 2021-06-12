@@ -21,7 +21,7 @@ const addPastes = async (pastes) => {
           date,
         });
 
-        console.log(paste);
+        console.log(paste.toJSON());
 
         if (labels.length > 0) {
           const pasteLabels = labels.map((label) => ({
