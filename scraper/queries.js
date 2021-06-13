@@ -9,33 +9,37 @@ const getAllPasteIds = async () => {
 };
 
 const addPastes = async (pastes) => {
+  console.log("fresh new pastes to add,yum!", pastes);
   return await Promise.all(
-    pastes.map(
-      async ({ pasteId, site, title, content, author, date, labels }) => {
-        const paste = await Paste.create({
-          pasteId,
-          site,
-          title,
-          content,
-          author,
-          date,
-        });
+    pastes.map(async (paste) => {
+      if (!paste) return;
+      const { pasteId, site, title, content, author, date, labels } = paste;
+      const newPaste = await Paste.create({
+        pasteId,
+        site,
+        title,
+        content,
+        author,
+        date,
+      });
 
-        console.log(paste.toJSON());
+      console.log("added new paste to db: ", newPaste.toJSON());
 
-        if (labels.length > 0) {
-          const pasteLabels = labels.map((label) => ({
-            pasteId: paste.id,
-            label,
-          }));
-          const pasteLabel = await PasteLabel.bulkCreate(pasteLabels);
+      if (labels && labels.length > 0) {
+        const pasteLabels = labels.map((label) => ({
+          pasteId: newPaste.id,
+          label,
+        }));
+        const pasteLabel = await PasteLabel.bulkCreate(pasteLabels);
 
-          console.log(pasteLabel);
-        }
-
-        return paste;
+        console.log(
+          "added new labels to db: ",
+          pasteLabel.map((label) => label.toJSON())
+        );
       }
-    )
+
+      return newPaste;
+    })
   );
 };
 

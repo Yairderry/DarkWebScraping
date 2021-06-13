@@ -1,18 +1,20 @@
 "use strict";
 
+require("dotenv").config();
 const tr = require("tor-request");
 const cheerio = require("cheerio");
 const { getAllPasteIds } = require("./queries");
 const YAML = require("js-yaml");
-const node_ner = require("node-ner");
-const fs = require("fs-extra");
+const fs = require("fs");
+const NER = require("ner");
 
-const ner = new node_ner({
-  install_path: `${__dirname}/stanford-ner-2017-06-09`,
+const ner = new NER({
+  port: 9000,
+  host: "ner_server",
 });
 
 // remove proxy if you're using localhost
-// tr.setTorAddress("tor_proxy");
+tr.setTorAddress("tor_proxy");
 
 const getIdsFromPage = async (page) => {
   return await new Promise((resolve, reject) => {
@@ -39,6 +41,8 @@ const getIdsFromPage = async (page) => {
 const getPasteFromId = async (pasteId) => {
   console.log("getting paste from id: ", pasteId);
 
+  const paste = {};
+
   try {
     const props = getYamlConfig(["pastes", "name"]);
     const [pastes, name] = [props[0], props[1]];
@@ -53,21 +57,29 @@ const getPasteFromId = async (pasteId) => {
     const author = getData(pastes.author, $);
     const site = name;
 
-    console.log("getting entities");
-    const entities = await getEntities(`${title} ${content}`, pasteId);
+    paste.pasteId = pasteId;
+    paste.site = site;
+    paste.title = title;
+    paste.content = content;
+    paste.author = author;
+    paste.date = pastes.date.ago
+      ? calculateDate($(pastes.date.selector), pastes.date.ago)
+      : new Date(date);
 
-    return {
-      pasteId,
-      site,
-      title,
-      content,
-      author,
-      date: pastes.date.ago
-        ? calculateDate($(pastes.date.selector), pastes.date.ago)
-        : new Date(date),
-      labels: Object.keys(entities),
-    };
+    try {
+      console.log("getting entities for paste ", pasteId);
+      const entities = await getEntities(`${title} ${content}`);
+      console.log("found entities: ", entities);
+      paste.labels = Object.keys(entities);
+    } catch (error) {
+      console.log("couldn't get entities from the ner server");
+    }
+
+    console.log("forwarding data to db: ", paste);
+
+    return paste;
   } catch (error) {
+    console.log(error);
     console.log("there was an error while trying to get paste", pasteId);
   }
 };
@@ -97,20 +109,25 @@ const scrapeAllIds = async (page, pagePasteIds = []) => {
 };
 
 const findNewPastes = async () => {
-  const props = getYamlConfig(["pasteIds"]);
-  const { pages } = props[0];
-  const checkPasteIds = await scrapeAllIds(pages.step.initial);
-  const currentPasteIds = await getAllPasteIds();
-  const newPasteIds = checkPasteIds.filter(
-    (pasteId) => !currentPasteIds.includes(pasteId)
-  );
+  try {
+    const props = getYamlConfig(["pasteIds"]);
+    const { pages } = props[0];
+    const checkPasteIds = await scrapeAllIds(pages.step.initial);
+    const currentPasteIds = await getAllPasteIds();
+    const newPasteIds = checkPasteIds.filter(
+      (pasteId) => !currentPasteIds.includes(pasteId)
+    );
 
-  if (newPasteIds.length <= 0) return [];
+    if (newPasteIds.length <= 0) return [];
+    console.log("new pastes ids: ", newPasteIds);
 
-  const pastes = await Promise.all(
-    newPasteIds.map(async (id) => await getPasteFromId(id))
-  );
-  return pastes;
+    const pastes = await Promise.all(
+      newPasteIds.map(async (id) => await getPasteFromId(id))
+    );
+    return pastes;
+  } catch (error) {
+    console.log(error);
+  }
 };
 
 // helper functions
@@ -160,23 +177,17 @@ const calculateDate = (rawData, ago) => {
   return new Date(now - totalTime);
 };
 
-const getEntities = (text, pasteId) => {
-  return new Promise((resolve, reject) => {
-    try {
-      const FILE_NAME = `${pasteId}.txt`;
-
-      fs.writeFileSync(FILE_NAME, text);
-
-      const path = `${__dirname}\\${FILE_NAME}`;
-
-      ner.fromFile(path, function (entities) {
-        resolve(entities);
-      });
-    } catch (error) {
-      console.log(error);
-      reject(error);
-    }
+const getEntities = async (text) => {
+  const timer = new Promise((res, reject) =>
+    setTimeout(() => reject("ner server took to long to respond"), 5000)
+  );
+  const nerServer = new Promise((resolve, reject) => {
+    ner.get(text, (err, res) => {
+      if (err) return reject(err);
+      resolve(res.entities);
+    });
   });
+  return await Promise.race([timer, nerServer]);
 };
 
 const torPromise = (url) => {
@@ -188,21 +199,6 @@ const torPromise = (url) => {
   });
 };
 
-const cleanDir = () => {
-  fs.readdir(`${__dirname}`, (error, files) => {
-    if (error) return console.log(error);
-
-    files.forEach((file) => {
-      const RegExp = /(.*).txt/;
-      if (RegExp.test(file))
-        fs.remove(`${__dirname}/${file}`, (err) => {
-          if (err) console.log(err);
-        });
-    });
-  });
-};
-
 module.exports = {
   findNewPastes,
-  cleanDir,
 };

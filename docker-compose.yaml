@@ -14,6 +14,12 @@ services:
     ports:
       - 9050:9050
 
+  ner_server:
+    restart: always
+    image: zmarty/stanford-ner-server
+    ports:
+      - 9000:9000
+
   scraper:
     restart: always
     build: ./scraper
@@ -25,6 +31,7 @@ services:
     depends_on:
       - tor_proxy
       - mysql_server
+      - ner_server
 
   backend:
     restart: always
