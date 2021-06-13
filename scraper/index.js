@@ -2,27 +2,7 @@
 
 const { findNewPastes } = require("./scrape");
 const { addPastes } = require("./queries");
-const YAML = require("js-yaml");
-const fs = require("fs");
-
-const getYamlConfig = (filename) => {
-  try {
-    const raw = fs.readFileSync(`./sites/${filename}`);
-    const data = YAML.load(raw);
-    return data;
-  } catch (error) {
-    throw error;
-  }
-};
-
-const findConfigFiles = () => {
-  const filesList = fs.readdirSync("./sites");
-  const configFilesList = filesList
-    .filter((file) => /(.*)-config.y[a]*ml/.test(file))
-    .map((file) => getYamlConfig(file));
-
-  return configFilesList;
-};
+const { findConfigFiles } = require("./utils");
 
 const app = async (file) => {
   console.log("scraping from: ", file.name);

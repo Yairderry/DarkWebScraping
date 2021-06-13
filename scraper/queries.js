@@ -9,7 +9,10 @@ const getAllPasteIds = async () => {
 };
 
 const addPastes = async (pastes) => {
-  console.log("fresh new pastes to add,yum!", pastes);
+  pastes && pastes.length > 0
+    ? console.log("fresh new pastes to add,yum!", pastes)
+    : console.log("there are no new pastes");
+
   return await Promise.all(
     pastes.map(async (paste) => {
       if (!paste) return;
