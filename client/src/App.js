@@ -15,6 +15,7 @@ function App() {
   const [pastes, setPastes] = useState(initialPastes);
   const [labels, setLabels] = useState([]);
   const [labelsFilter, setLabelsFilter] = useState([]);
+  const isInitialMount = useRef(true);
 
   const titleInputRef = useRef();
   const contentInputRef = useRef();
@@ -42,27 +43,9 @@ function App() {
     );
   };
 
-  const getPastes = (params) => {
-    const title = titleInputRef.current.value
-      ? `title=${titleInputRef.current.value}&`
-      : "";
-
-    const content = contentInputRef.current.value
-      ? `content=${contentInputRef.current.value}&`
-      : "";
-
-    const author = authorInputRef.current.value
-      ? `author=${authorInputRef.current.value}&`
-      : "";
-
-    const labels = labelsFilter.map((label) => `labels=${label}&`).join("");
-
+  const getPastes = () => {
     axios
-      .get(
-        `http://localhost:8090/api/paste/all?${title}${content}${author}${labels}&limit=15&offset=${
-          (pastes.page - 1) * 15
-        }`
-      )
+      .get(getPastesURL(true))
       .then(({ data }) => {
         const state = {
           count: data.rows.length + pastes.list.length,
@@ -75,9 +58,7 @@ function App() {
       .catch((err) => console.log(err));
   };
 
-  let cancelToken;
-  const filterPastes = () => {
-    setPastes(initialPastes);
+  const getPastesURL = (pagination) => {
     const title = titleInputRef.current.value
       ? `title=${titleInputRef.current.value}&`
       : "";
@@ -92,18 +73,24 @@ function App() {
 
     const labels = labelsFilter.map((label) => `labels=${label}&`).join("");
 
+    return `http://localhost:8090/api/paste/all?${title}${content}${author}${labels}limit=15&offset=${
+      pagination ? (pastes.page - 1) * 15 : 0
+    }`;
+  };
+
+  let cancelToken;
+  const filterPastes = () => {
+    setPastes(initialPastes);
+
     if (cancelToken)
       cancelToken.cancel("Operation canceled due to new request.");
 
     cancelToken = axios.CancelToken.source();
 
     axios
-      .get(
-        `http://localhost:8090/api/paste/all?${title}${content}${author}${labels}limit=15&offset=0`,
-        {
-          cancelToken: cancelToken.token,
-        }
-      )
+      .get(getPastesURL(), {
+        cancelToken: cancelToken.token,
+      })
       .then(({ data }) => {
         const state = {
           count: data.rows.length,
@@ -123,6 +110,14 @@ function App() {
     getPastes();
     getLabels();
   }, []);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+    } else {
+      filterPastes();
+    }
+  }, [labelsFilter]);
 
   return (
     <div className="App">

@@ -1,13 +1,3 @@
-.darkBackground {
-  height: 100vh;
-  width: 100vw;
-  background-color: rgba(0, 0, 0, 0.6);
-  position: fixed;
-  display: flex;
-  align-items: center;
-  z-index: 6;
-}
-
 .loader {
   height: 4vw;
   width: 4vw;
