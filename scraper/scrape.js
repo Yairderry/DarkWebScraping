@@ -4,8 +4,6 @@ require("dotenv").config();
 const tr = require("tor-request");
 const cheerio = require("cheerio");
 const { getAllPasteIds } = require("./queries");
-const YAML = require("js-yaml");
-const fs = require("fs");
 const NER = require("ner");
 
 const ner = new NER({
@@ -16,37 +14,30 @@ const ner = new NER({
 // remove proxy if you're using localhost
 tr.setTorAddress("tor_proxy");
 
-const getIdsFromPage = async (page) => {
-  return await new Promise((resolve, reject) => {
-    const props = getYamlConfig(["pasteIds"]);
-    const { pages, link } = props[0];
-    tr.request(`${pages.URL}${page}`, function (err, response, html) {
-      if (err || response.statusCode !== 200) return reject(err);
+const getIdsFromPage = async (page, config) => {
+  const { pages, link } = config;
 
-      const $ = cheerio.load(html);
+  const html = await torPromise(`${pages.URL}${page}`);
 
-      const pastes = [];
-      $(link.selector).each((i, el) => {
-        const paste = $(el).attr("href");
-        pastes.push(paste);
-      });
+  const $ = cheerio.load(html);
 
-      const pasteIds = pastes.map((pasteId) => pasteId.slice(link.slice));
-
-      resolve(pasteIds);
-    });
+  const pastes = [];
+  $(link.selector).each((i, el) => {
+    const paste = $(el).attr("href");
+    pastes.push(paste);
   });
+
+  const pasteIds = pastes.map((pasteId) => pasteId.slice(link.slice));
+
+  return pasteIds;
 };
 
-const getPasteFromId = async (pasteId) => {
+const getPasteFromId = async (pasteId, pastes, name) => {
   console.log("getting paste from id: ", pasteId);
 
   const paste = {};
 
   try {
-    const props = getYamlConfig(["pastes", "name"]);
-    const [pastes, name] = [props[0], props[1]];
-
     const html = await torPromise(`${pastes.URL}${pasteId}`);
 
     const $ = cheerio.load(html);
@@ -66,6 +57,8 @@ const getPasteFromId = async (pasteId) => {
       ? calculateDate($(pastes.date.selector), pastes.date.ago)
       : new Date(date);
 
+    console.log(paste);
+
     try {
       console.log("getting entities for paste ", pasteId);
       const entities = await getEntities(`${title} ${content}`);
@@ -84,35 +77,31 @@ const getPasteFromId = async (pasteId) => {
   }
 };
 
-const scrapeAllIds = async (page, pagePasteIds = []) => {
+const scrapeAllIds = async (page, config, pagePasteIds = []) => {
+  const { pages } = config;
+
+  if (pages.limit && page >= pages.limit) return pagePasteIds;
+
   try {
-    const props = getYamlConfig(["pasteIds"]);
-    const { pages } = props[0];
-
-    if (pages.limit && page >= pages.limit)
-      throw new Error("You've reached the limit you set!");
-
     console.log("getting ids from page: ", page);
 
-    const pasteIds = await getIdsFromPage(page);
+    const pasteIds = await getIdsFromPage(page, config);
 
     console.log("ids found in page ", page, pasteIds);
 
     pagePasteIds.push(...pasteIds);
-    return scrapeAllIds(page + pages.step.by, pagePasteIds);
+    return scrapeAllIds(page + pages.step.by, config, pagePasteIds);
   } catch (error) {
-    console.log("error", error);
-
     console.log("final list of ids:", pagePasteIds);
     return pagePasteIds;
   }
 };
 
-const findNewPastes = async () => {
+const findNewPastes = async (file) => {
+  const { pasteIds, pastes, name } = file;
+  const { pages } = pasteIds;
   try {
-    const props = getYamlConfig(["pasteIds"]);
-    const { pages } = props[0];
-    const checkPasteIds = await scrapeAllIds(pages.step.initial);
+    const checkPasteIds = await scrapeAllIds(pages.step.initial, pasteIds);
     const currentPasteIds = await getAllPasteIds();
     const newPasteIds = checkPasteIds.filter(
       (pasteId) => !currentPasteIds.includes(pasteId)
@@ -121,26 +110,17 @@ const findNewPastes = async () => {
     if (newPasteIds.length <= 0) return [];
     console.log("new pastes ids: ", newPasteIds);
 
-    const pastes = await Promise.all(
-      newPasteIds.map(async (id) => await getPasteFromId(id))
+    const pastesData = await Promise.all(
+      newPasteIds.map(async (id) => await getPasteFromId(id, pastes, name))
     );
-    return pastes;
+    return pastesData;
   } catch (error) {
     console.log(error);
+    return [];
   }
 };
 
 // helper functions
-const getYamlConfig = (properties = []) => {
-  try {
-    const raw = fs.readFileSync("./sites/stikked-config.yaml");
-    const data = YAML.load(raw);
-    return properties.map((prop) => data[prop]);
-  } catch (error) {
-    throw error;
-  }
-};
-
 const getData = (config, $) => {
   const { regex, selector } = config;
   const rawData = $(selector).text().trim();
@@ -179,7 +159,7 @@ const calculateDate = (rawData, ago) => {
 
 const getEntities = async (text) => {
   const timer = new Promise((res, reject) =>
-    setTimeout(() => reject("ner server took to long to respond"), 5000)
+    setTimeout(() => reject("ner server took to long to respond"), 20000)
   );
   const nerServer = new Promise((resolve, reject) => {
     ner.get(text, (err, res) => {
