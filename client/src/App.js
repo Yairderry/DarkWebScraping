@@ -112,6 +112,8 @@ function App() {
   }, []);
 
   useEffect(() => {
+    console.log("labels:", labelsFilter);
+    console.log("isInitialMount:", isInitialMount.current);
     if (isInitialMount.current) {
       isInitialMount.current = false;
     } else {

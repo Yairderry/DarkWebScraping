@@ -18,12 +18,12 @@ const getAllPastes = async (params) => {
   if (content) where.content = { [Op.like]: `%${content}%` };
   if (author) where.author = { [Op.like]: `%${author}%` };
   if (labels) {
+    const label = typeof labels === "string" ? labels : { [Op.or]: labels };
     const possiblePastes = await PasteLabel.findAll({
       where: {
-        label: typeof labels === "string" ? labels : { [Op.or]: labels },
+        label,
       },
       attributes: ["pasteId", "label"],
-      group: "pasteId",
     });
     where.id = {
       [Op.in]: possiblePastes.map((paste) => paste.toJSON().pasteId),
