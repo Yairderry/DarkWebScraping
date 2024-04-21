@@ -13,9 +13,7 @@
 
 ## Description
 
----
-
-In this challenge i developed a scraping, analysis and presentation platform to one of the most hideous places on the dark-web: Paste Sites. These sites contain a lot of criminal activity, ranging from illegal hacking and data theft attempts, through hitmans and other criminal services for sell and all the way to links to child pornography sites.
+In this challenge I developed a scraping, analysis and presentation platform to one of the most hideous places on the dark-web: Paste Sites. These sites contain a lot of criminal activity, ranging from illegal hacking and data theft attempts, through hitmans and other criminal services for sale and all the way to links to child pornography sites.
 
 Note - “paste site” is a site where hackers and cybercriminals have the chance to post whatever textual content they wish to and it will be published there for 1 day.
 
