@@ -4,13 +4,7 @@ require("dotenv").config();
 const YAML = require("js-yaml");
 const fs = require("fs");
 const tr = require("tor-request");
-const NER = require("ner");
 const env = process.env.NODE_ENV || "development";
-
-const ner = new NER({
-  port: 9000,
-  host: "ner_server",
-});
 
 if (env === "production") tr.setTorAddress("tor_proxy");
 
@@ -70,16 +64,16 @@ const calculateDate = (rawData, ago) => {
 };
 
 const getEntities = async (text) => {
-  const timer = new Promise((res, reject) =>
-    setTimeout(() => reject("ner server took to long to respond"), 20000)
-  );
-  const nerServer = new Promise((resolve, reject) => {
-    ner.get(text, (err, res) => {
-      if (err) return reject(err);
-      resolve(res.entities);
+  const options = {
+    method: "POST",
+    headers: { Accept: "application/json", "Content-Type": "application/json" },
+    body: JSON.stringify({ text, model: "en" }),
+  };
+  return await fetch("http://127.0.0.1:8080/ent", options)
+    .then((res) => res.json())
+    .then((entities) => {
+      return [...new Set(entities.map((ent) => ent.type))];
     });
-  });
-  return await Promise.race([timer, nerServer]);
 };
 
 const torPromise = (url) => {

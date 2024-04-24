@@ -6,9 +6,8 @@ const { getAllPasteIds } = require("./queries");
 const { calculateDate, getEntities, torPromise, getData } = require("./utils");
 
 const getIdsFromPage = async (page, config) => {
+  const { pages, link, name } = config;
   try {
-    const { pages, link } = config;
-
     const html = await torPromise(`${pages.URL}${page}`);
     const $ = cheerio.load(html);
 
@@ -19,11 +18,11 @@ const getIdsFromPage = async (page, config) => {
     });
 
     const pasteIds = pastes.map((pasteId) => pasteId.slice(link.slice));
-    console.log(pasteIds)
 
     return pasteIds;
   } catch (error) {
-    console.log(error)
+    console.log(`Couldn't connect to ${name}`);
+    console.log(error);
   }
 };
 
@@ -56,8 +55,9 @@ const getPasteFromId = async (pasteId, pastes, name) => {
       console.log("Getting entities for paste ", pasteId);
       const entities = await getEntities(`${title} ${content}`);
       console.log("Found entities: ", entities);
-      paste.labels = Object.keys(entities);
+      paste.labels = entities;
     } catch (error) {
+      console.log(error);
       console.log(
         "Ner server didn't respond in 20 seconds, couldn't get entities"
       );
@@ -94,7 +94,10 @@ const findNewPastes = async (file) => {
   const { pasteIds, pastes, name } = file;
   const { pages } = pasteIds;
   try {
-    const checkPasteIds = await scrapeAllIds(pages.step.initial, pasteIds);
+    const checkPasteIds = await scrapeAllIds(pages.step.initial, {
+      ...pasteIds,
+      name,
+    });
     const currentPasteIds = await getAllPasteIds();
     const newPasteIds = checkPasteIds.filter(
       (pasteId) => !currentPasteIds.includes(pasteId)

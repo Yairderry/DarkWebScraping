@@ -5,7 +5,7 @@ const { addPastes } = require("./queries");
 const { findConfigFiles } = require("./utils");
 
 const app = async (file) => {
-  console.log("scraping from: ", file.name);
+  console.log("Scraping from: ", file.name);
   try {
     const pastes = await findNewPastes(file);
     const response = await addPastes(pastes);
@@ -29,4 +29,4 @@ setInterval(() => {
       .then((data) => console.log(data))
       .catch((err) => console.log(err))
   );
-}, 120000);
+}, 480000);
