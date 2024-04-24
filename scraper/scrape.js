@@ -6,25 +6,29 @@ const { getAllPasteIds } = require("./queries");
 const { calculateDate, getEntities, torPromise, getData } = require("./utils");
 
 const getIdsFromPage = async (page, config) => {
-  const { pages, link } = config;
+  try {
+    const { pages, link } = config;
 
-  const html = await torPromise(`${pages.URL}${page}`);
+    const html = await torPromise(`${pages.URL}${page}`);
+    const $ = cheerio.load(html);
 
-  const $ = cheerio.load(html);
+    const pastes = [];
+    $(link.selector).each((i, el) => {
+      const paste = $(el).attr("href");
+      pastes.push(paste);
+    });
 
-  const pastes = [];
-  $(link.selector).each((i, el) => {
-    const paste = $(el).attr("href");
-    pastes.push(paste);
-  });
+    const pasteIds = pastes.map((pasteId) => pasteId.slice(link.slice));
+    console.log(pasteIds)
 
-  const pasteIds = pastes.map((pasteId) => pasteId.slice(link.slice));
-
-  return pasteIds;
+    return pasteIds;
+  } catch (error) {
+    console.log(error)
+  }
 };
 
 const getPasteFromId = async (pasteId, pastes, name) => {
-  console.log("getting paste from id: ", pasteId);
+  console.log("Getting paste from id: ", pasteId);
 
   const paste = {};
 
@@ -49,20 +53,20 @@ const getPasteFromId = async (pasteId, pastes, name) => {
       : new Date(date);
 
     try {
-      console.log("getting entities for paste ", pasteId);
+      console.log("Getting entities for paste ", pasteId);
       const entities = await getEntities(`${title} ${content}`);
-      console.log("found entities: ", entities);
+      console.log("Found entities: ", entities);
       paste.labels = Object.keys(entities);
     } catch (error) {
       console.log(
-        "ner server didn't respond in 20 seconds, couldn't get entities"
+        "Ner server didn't respond in 20 seconds, couldn't get entities"
       );
     }
 
     return paste;
   } catch (error) {
     console.log(error);
-    console.log("there was an error while trying to get paste", pasteId);
+    console.log("There was an error while trying to get paste", pasteId);
   }
 };
 
@@ -72,16 +76,16 @@ const scrapeAllIds = async (page, config, pagePasteIds = []) => {
   if (pages?.limit && page >= pages?.limit) return pagePasteIds;
 
   try {
-    console.log("getting ids from page: ", page);
+    console.log("Getting ids from page: ", page);
 
     const pasteIds = await getIdsFromPage(page, config);
 
-    console.log("ids found in page ", page, pasteIds);
+    console.log("Ids found in page ", page, pasteIds);
 
     pagePasteIds.push(...pasteIds);
     return scrapeAllIds(page + pages.step.by, config, pagePasteIds);
   } catch (error) {
-    console.log("final list of ids:", pagePasteIds);
+    console.log("Final list of ids:", pagePasteIds);
     return pagePasteIds;
   }
 };
@@ -97,7 +101,7 @@ const findNewPastes = async (file) => {
     );
 
     if (newPasteIds.length <= 0) return [];
-    console.log("new pastes ids: ", newPasteIds);
+    console.log("New pastes ids: ", newPasteIds);
 
     const pastesData = await Promise.all(
       newPasteIds.map(async (id) => await getPasteFromId(id, pastes, name))

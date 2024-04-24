@@ -1,16 +1,18 @@
 "use strict";
 
+require("dotenv").config();
 const YAML = require("js-yaml");
 const fs = require("fs");
 const tr = require("tor-request");
 const NER = require("ner");
+const env = process.env.NODE_ENV || "development";
 
 const ner = new NER({
   port: 9000,
   host: "ner_server",
 });
 
-tr.setTorAddress("tor_proxy");
+if (env === "production") tr.setTorAddress("tor_proxy");
 
 const getYamlConfig = (filename) => {
   try {

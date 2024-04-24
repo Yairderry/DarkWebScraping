@@ -10,8 +10,8 @@ const getAllPasteIds = async () => {
 
 const addPastes = async (pastes) => {
   pastes && pastes.length > 0
-    ? console.log("fresh new pastes to add,yum!", pastes)
-    : console.log("there are no new pastes");
+    ? console.log("Fresh new pastes to add, yum!", pastes)
+    : console.log("There are no new pastes.");
 
   return await Promise.all(
     pastes.map(async (paste) => {
@@ -26,7 +26,7 @@ const addPastes = async (pastes) => {
         date,
       });
 
-      console.log("added new paste to db: ", newPaste.toJSON());
+      console.log("Added new paste to db: ", newPaste.toJSON());
 
       if (labels && labels.length > 0) {
         const pasteLabels = labels.map((label) => ({
@@ -36,7 +36,7 @@ const addPastes = async (pastes) => {
         const pasteLabel = await PasteLabel.bulkCreate(pasteLabels);
 
         console.log(
-          "added new labels to db: ",
+          "Added new labels to db: ",
           pasteLabel.map((label) => label.toJSON())
         );
       }
