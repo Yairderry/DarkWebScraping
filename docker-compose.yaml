@@ -2,8 +2,8 @@ version: "3.8"
 
 services:
   mysql_server:
-    image: mysql:8.0.0
     restart: always
+    image: mysql:8.0.0
     environment:
       MYSQL_DATABASE: "${MYSQL_DATABASE}"
       MYSQL_ROOT_PASSWORD: "${MYSQL_PASSWORD}"
@@ -16,9 +16,9 @@ services:
 
   ner_server:
     restart: always
-    image: zmarty/stanford-ner-server
+    image: jgontrum/spacyapi:en_v2
     ports:
-      - 9000:9000
+      - "9000:9000"
 
   scraper:
     restart: always
@@ -32,6 +32,8 @@ services:
       - tor_proxy
       - mysql_server
       - ner_server
+    environment:
+      NODE_ENV: "${NODE_ENV}"
 
   backend:
     restart: always
@@ -43,6 +45,8 @@ services:
       - "/backend-volume/node_modules"
     depends_on:
       - mysql_server
+    environment:
+      NODE_ENV: "${NODE_ENV}"
 
   client:
     restart: always

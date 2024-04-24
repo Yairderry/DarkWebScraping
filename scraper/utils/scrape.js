@@ -5,8 +5,12 @@ const YAML = require("js-yaml");
 const fs = require("fs");
 const tr = require("tor-request");
 const env = process.env.NODE_ENV || "development";
+let NER_BASE_URL = "http://localhost";
 
-if (env === "production") tr.setTorAddress("tor_proxy");
+if (env === "production") {
+  tr.setTorAddress("tor_proxy");
+  NER_BASE_URL = "ner_server";
+}
 
 const getYamlConfig = (filename) => {
   try {
@@ -69,7 +73,7 @@ const getEntities = async (text) => {
     headers: { Accept: "application/json", "Content-Type": "application/json" },
     body: JSON.stringify({ text, model: "en" }),
   };
-  return await fetch("http://127.0.0.1:8080/ent", options)
+  return await fetch(`${NER_BASE_URL}:9000/ent`, options)
     .then((res) => res.json())
     .then((entities) => {
       return [...new Set(entities.map((ent) => ent.type))];
