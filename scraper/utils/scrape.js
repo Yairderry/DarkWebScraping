@@ -6,11 +6,11 @@ const fs = require("fs");
 const tr = require("tor-request");
 const { default: axios } = require("axios");
 const env = process.env.NODE_ENV || "development";
-let NER_BASE_URL = "http://127.0.0.1";
+let NER_BASE_URL = "http://127.0.0.1:9000";
 
 if (env === "production") {
   tr.setTorAddress("tor_proxy");
-  NER_BASE_URL = "ner_server";
+  NER_BASE_URL = "http://ner_server:80"
 }
 
 const getYamlConfig = (filename) => {
@@ -71,7 +71,7 @@ const calculateDate = (rawData, ago) => {
 const getEntities = async (text) => {
   try {
     return axios
-      .post(`${NER_BASE_URL}:9000/ent`, { text, model: "en" })
+      .post(`${NER_BASE_URL}/ent`, { text, model: "en" })
       .then(({ data }) => [...new Set(data.map((ent) => ent.type))]);
   } catch (error) {
     console.log("There was an error with getting the entities.");
