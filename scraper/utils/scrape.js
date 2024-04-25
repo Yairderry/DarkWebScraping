@@ -4,8 +4,9 @@ require("dotenv").config();
 const YAML = require("js-yaml");
 const fs = require("fs");
 const tr = require("tor-request");
+const { default: axios } = require("axios");
 const env = process.env.NODE_ENV || "development";
-let NER_BASE_URL = "http://localhost";
+let NER_BASE_URL = "http://127.0.0.1";
 
 if (env === "production") {
   tr.setTorAddress("tor_proxy");
@@ -68,16 +69,15 @@ const calculateDate = (rawData, ago) => {
 };
 
 const getEntities = async (text) => {
-  const options = {
-    method: "POST",
-    headers: { Accept: "application/json", "Content-Type": "application/json" },
-    body: JSON.stringify({ text, model: "en" }),
-  };
-  return await fetch(`${NER_BASE_URL}:9000/ent`, options)
-    .then((res) => res.json())
-    .then((entities) => {
-      return [...new Set(entities.map((ent) => ent.type))];
-    });
+  try {
+    return axios
+      .post(`${NER_BASE_URL}:9000/ent`, { text, model: "en" })
+      .then(({ data }) => [...new Set(data.map((ent) => ent.type))]);
+  } catch (error) {
+    console.log("There was an error with getting the entities.");
+    console.log(error);
+    return [];
+  }
 };
 
 const torPromise = (url) => {

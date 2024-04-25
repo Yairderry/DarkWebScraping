@@ -58,9 +58,6 @@ const getPasteFromId = async (pasteId, pastes, name) => {
       paste.labels = entities;
     } catch (error) {
       console.log(error);
-      console.log(
-        "Ner server didn't respond in 20 seconds, couldn't get entities"
-      );
     }
 
     return paste;
