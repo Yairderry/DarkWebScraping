@@ -1,7 +1,7 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
-  "icons": [],
+  "short_name": "Dark Web Scraper",
+  "name": "Dark Web Scraper",
+  "icons": ["favicon.ico"],
   "start_url": ".",
   "display": "standalone",
   "theme_color": "#000000",
