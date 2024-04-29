@@ -1,5 +1,5 @@
 import "./App.css";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import Pastes from "./components/Pastes";
 import Header from "./components/Header";
 import InfiniteScroll from "react-infinite-scroll-component";
@@ -21,15 +21,37 @@ function App() {
   const contentInputRef = useRef();
   const authorInputRef = useRef();
 
-  const getLabels = () => {
+  const getLabels = useCallback(() => {
     axios
       .get(`http://localhost:8090/api/paste/labels`)
       .then(({ data }) => {
         setLabels(data);
       })
       .catch((err) => console.log(err));
-  };
+  }, []);
 
+  const getPastesURL = useCallback(
+    (pagination) => {
+      const title = titleInputRef.current.value
+        ? `title=${titleInputRef.current.value}&`
+        : "";
+
+      const content = contentInputRef.current.value
+        ? `content=${contentInputRef.current.value}&`
+        : "";
+
+      const author = authorInputRef.current.value
+        ? `author=${authorInputRef.current.value}&`
+        : "";
+
+      const labels = labelsFilter.map((label) => `labels=${label}&`).join("");
+
+      return `http://localhost:8090/api/paste/all?${title}${content}${author}${labels}limit=15&offset=${
+        pagination ? (pastes.page - 1) * 15 : 0
+      }`;
+    },
+    [pastes.page, labelsFilter]
+  );
   const toggleLabelsFiler = (e) => {
     const label = e.target;
     const value = label.innerText;
@@ -43,7 +65,7 @@ function App() {
     );
   };
 
-  const getPastes = () => {
+  const getPastes = useCallback(() => {
     axios
       .get(getPastesURL(true))
       .then(({ data }) => {
@@ -56,30 +78,10 @@ function App() {
         setPastes(state);
       })
       .catch((err) => console.log(err));
-  };
-
-  const getPastesURL = (pagination) => {
-    const title = titleInputRef.current.value
-      ? `title=${titleInputRef.current.value}&`
-      : "";
-
-    const content = contentInputRef.current.value
-      ? `content=${contentInputRef.current.value}&`
-      : "";
-
-    const author = authorInputRef.current.value
-      ? `author=${authorInputRef.current.value}&`
-      : "";
-
-    const labels = labelsFilter.map((label) => `labels=${label}&`).join("");
-
-    return `http://localhost:8090/api/paste/all?${title}${content}${author}${labels}limit=15&offset=${
-      pagination ? (pastes.page - 1) * 15 : 0
-    }`;
-  };
+  }, [getPastesURL, pastes.count, pastes.list, pastes.page]);
 
   let cancelToken;
-  const filterPastes = () => {
+  const filterPastes = useCallback(() => {
     setPastes(initialPastes);
 
     if (cancelToken)
@@ -104,22 +106,20 @@ function App() {
       .catch((err) => {
         console.log(err);
       });
-  };
+  }, []);
 
   useEffect(() => {
     getPastes();
     getLabels();
-  }, []);
+  }, [getPastes, getLabels]);
 
   useEffect(() => {
-    console.log("labels:", labelsFilter);
-    console.log("isInitialMount:", isInitialMount.current);
     if (isInitialMount.current) {
       isInitialMount.current = false;
     } else {
       filterPastes();
     }
-  }, [labelsFilter]);
+  }, [filterPastes]);
 
   return (
     <div className="App">

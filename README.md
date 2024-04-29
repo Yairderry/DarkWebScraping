@@ -42,7 +42,7 @@ npm i
 npm build
 ```
 
-_You should have everything you need by now, all that is left to do is to run docker and run this line in the main directory:_
+_You should have everything you need by now, all that is left to do is to run docker and run this line in the root directory:_
 
 ```
 docker-compose up
@@ -56,7 +56,7 @@ And now you can simply go to http://localhost and view the data!
 
 ### An omni-search bar to the platform
 
-_You can search by title, content or the author._
+_You can search by title, content or the author and you can filter pastes by tags associated with each paste._
 
 ### Docker compose
 
@@ -64,7 +64,7 @@ _The whole program is built using Docker compose environment and in doing so ach
 
 ### Data analysis
 
-_Every paste is analyzed and labeled Named Entity Recognition.NER extracts entities from the text and display them as tags in the dashboard. It's accomplished with an image of stanford NER._
+_Every paste is analyzed and labeled Named Entity Recognition.NER extracts entities from the text and display them as tags in the dashboard. It's accomplished with an image of library for Natural Language Processing in python called [spaCy](https://spacy.io/)._
 
 ### Scraping framework
 
