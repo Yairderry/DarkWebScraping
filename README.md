@@ -39,7 +39,7 @@ _Then you'll want to build the client by doing this:_
 ```
 cd client
 npm i
-npm build
+npm run build
 ```
 
 _You should have everything you need by now, all that is left to do is to run docker and run this line in the root directory:_

@@ -1,0 +1,31 @@
+name: stronghold
+
+pasteIds:
+  pages:
+    URL: http://strongerw2ise74v3duebgsvug4mehyhlpa7f6kfwnas7zofs3kov7yd.onion/all?page=
+    step:
+      initial: 1
+      by: 1
+    # limit: 2
+  link:
+    selector: .btn.btn-success
+    slice: 70
+
+pastes:
+  URL: http://strongerw2ise74v3duebgsvug4mehyhlpa7f6kfwnas7zofs3kov7yd.onion/
+  title:
+    selector: h4
+  content:
+    selector: .well.well-sm.well-white.pre
+  author:
+    regex:
+      index: 1
+      exp: "Posted by (.*) at"
+      flags: g
+    selector: .col-sm-6
+  date:
+    regex:
+      index: 1
+      exp: "at (\\d\\d \\w\\w\\w \\d\\d\\d\\d, \\d\\d:\\d\\d:\\d\\d UTC)"
+      flags: ig
+    selector: .col-sm-6

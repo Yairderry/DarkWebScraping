@@ -1,0 +1,60 @@
+name: paste
+
+pasteIds:
+  pages:
+    URL: http://paste2vju4l4ps5z52aqydmxavq73duz5o6yp6fz7jmo4ggl7ey5dxyd.onion/lists/
+    step:
+      initial: 1
+      by: 1
+    limit: 10
+  link:
+    selector: "td.first a"
+    slice: 75
+
+pastes:
+  URL: http://paste2vju4l4ps5z52aqydmxavq73duz5o6yp6fz7jmo4ggl7ey5dxyd.onion/view/
+  title:
+    selector: .pagetitle.right
+  content:
+    selector: ol
+  author:
+    regex:
+      index: 1
+      exp: "By: (.*) \\| \\d+ .* ago \\|"
+      flags: g
+    selector: .meta
+  date:
+    ago:
+      sec:
+        index: 1
+        exp: "\\| (\\d+) .* ago \\|"
+        flags: ig
+      min:
+        index: 1
+        exp: "\\| (\\d+) .* ago \\|"
+        flags: ig
+      hour:
+        index: 1
+        exp: "\\| (\\d+) .* ago \\|"
+        flags: ig
+      day:
+        index: 1
+        exp: "\\| (\\d+) .* ago \\|"
+        flags: ig
+      week:
+        index: 1
+        exp: "\\| (\\d+) .* ago \\|"
+        flags: ig
+      month:
+        index: 1
+        exp: "\\| (\\d+) .* ago \\|"
+        flags: ig
+      year:
+        index: 1
+        exp: "\\| (\\d+) .* ago \\|"
+        flags: ig
+    regex:
+      index: 1
+      exp: "\\| (\\d+) .* ago \\|"
+      flags: ig
+    selector: .meta
