@@ -26,6 +26,7 @@ function App() {
       .get(`http://localhost:8090/api/paste/labels`)
       .then(({ data }) => {
         setLabels(data);
+        setLabelsFilter(data);
       })
       .catch((err) => console.log(err));
   };
@@ -49,7 +50,7 @@ function App() {
       pagination ? (pastes.page - 1) * 15 : 0
     }`;
   };
-  const toggleLabelsFiler = (e) => {
+  const toggleLabelsFilter = (e) => {
     const label = e.target;
     const value = label.innerText;
 
@@ -126,7 +127,7 @@ function App() {
         contentInputRef={contentInputRef}
         authorInputRef={authorInputRef}
         labels={labels}
-        toggleLabelsFiler={toggleLabelsFiler}
+        toggleLabelsFilter={toggleLabelsFilter}
       />
       <InfiniteScroll
         dataLength={pastes.list.length}
@@ -139,7 +140,7 @@ function App() {
           </p>
         }
       >
-        <Pastes pastes={pastes.list} />
+        <Pastes pastes={pastes.list} labelsFilter={labelsFilter} />
       </InfiniteScroll>
     </div>
   );

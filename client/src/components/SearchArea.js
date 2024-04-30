@@ -7,7 +7,7 @@ export default function SearchArea({
   authorInputRef,
   filterPastes,
   labels,
-  toggleLabelsFiler,
+  toggleLabelsFilter,
 }) {
   return (
     <div className="search-area">
@@ -37,10 +37,10 @@ export default function SearchArea({
         <div className="dropdown-content">
           {labels.map((label, i) => (
             <span
-              className="label-filter"
+              className="label-filter checked"
               key={i}
               value={label}
-              onClick={toggleLabelsFiler}
+              onClick={toggleLabelsFilter}
             >
               {label}
             </span>

@@ -3,10 +3,18 @@ import Paste from "./Paste";
 
 import "../styles/Pastes.css";
 
-export default function Pastes({ pastes }) {
+export default function Pastes({ pastes, labelsFilter }) {
   return (
     <div className="pastes">
-      {pastes && pastes.map((paste, i) => <Paste key={i} paste={paste} />)}
+      {pastes &&
+        pastes
+          .filter(({ PasteLabels }) => {
+            return (
+              PasteLabels.length === 0 ||
+              PasteLabels.some((label) => labelsFilter.includes(label))
+            );
+          })
+          .map((paste, i) => <Paste key={i} paste={paste} />)}
     </div>
   );
 }

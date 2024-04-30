@@ -9,7 +9,7 @@ export default function Header({
   authorInputRef,
   filterPastes,
   labels,
-  toggleLabelsFiler,
+  toggleLabelsFilter,
 }) {
   return (
     <header>
@@ -20,7 +20,7 @@ export default function Header({
         titleInputRef={titleInputRef}
         filterPastes={filterPastes}
         labels={labels}
-        toggleLabelsFiler={toggleLabelsFiler}
+        toggleLabelsFilter={toggleLabelsFilter}
       />
     </header>
   );
